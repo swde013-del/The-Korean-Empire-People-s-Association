@@ -46,6 +46,7 @@
             gap: 10px;
             font-weight: bold;
             font-size: 1.3rem;
+            cursor: pointer;
         }
 
         .logo-img {
@@ -53,6 +54,12 @@
             width: auto;
             object-fit: contain;
             border-radius: 3px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .auth-nav-btn {
@@ -97,12 +104,6 @@
             font-size: 1.2rem;
             color: #555;
             border-radius: 6px;
-        }
-
-        .hero-image-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
         }
 
         /* 3. 본문 레이아웃 */
@@ -166,13 +167,22 @@
             flex-direction: column;
         }
 
-        .posts-card h2 {
+        .posts-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
             margin-bottom: 1rem;
         }
 
-        /* 폼 요소 */
+        .posts-card-header h2 {
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 폼 및 입력 요소 */
         input[type="text"], input[type="email"], input[type="password"], textarea {
             width: 100%;
             padding: 0.6rem;
@@ -200,37 +210,72 @@
             background-color: #555;
         }
 
-        /* 게시글 & 댓글 스타일 */
+        /* 게시글 리스트 아이템 (외각선 추가) */
         .post-item {
-            border-bottom: 1px solid #ddd;
-            padding: 1rem 0;
+            background: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .post-item:hover {
+            background-color: #fafafa;
         }
 
         .post-title {
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
         }
 
         .post-meta {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #666;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.6rem;
         }
 
-        .comments-box {
-            background-color: #f1f3f5;
-            padding: 0.8rem;
-            border-radius: 6px;
-            margin-top: 0.8rem;
+        .post-img-preview {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        /* 상세 페이지 뷰 */
+        #detail-view {
+            display: none;
+            background: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .comments-section {
+            margin-top: 2rem;
+            border-top: 2px solid #ddd;
+            padding-top: 1.5rem;
         }
 
         .comment-item {
-            font-size: 0.85rem;
-            padding: 0.2rem 0;
-            border-bottom: 1px dashed #ccc;
+            background: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
         }
 
-        /* 모달 (로그인/가입) */
+        .comment-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        /* 모달 공통 스타일 */
         .modal {
             display: none;
             position: fixed;
@@ -244,10 +289,12 @@
         .modal-content {
             background: white;
             padding: 2rem;
-            border-radius: 8px;
+            border-radius: 12px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             border: 2px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         /* 푸터 */
@@ -283,19 +330,19 @@
 </head>
 <body>
 
-    <!-- 1. 상단 네비게이션 (로고 & 회원가입/로그인) -->
+    <!-- 1. 상단 헤더 -->
     <header>
-        <div class="logo-container">
+        <div class="logo-container" onclick="goHome()">
             <img src="logo.png" alt="대한제국 태극기 로고" class="logo-img">
             <span>대한제국인민협회</span>
         </div>
-        <div id="auth-nav-area">
+        <div class="header-right" id="auth-nav-area">
             <button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>
         </div>
     </header>
 
-    <!-- 2. 메인 비주얼 (영문 타이틀 & 이미지) -->
-    <section class="hero-section">
+    <!-- 2. 메인 비주얼 -->
+    <section class="hero-section" id="hero-sec">
         <h1 class="hero-title">The Korean Empire People's Association</h1>
         <div class="hero-image-box">
             <span>이미지</span>
@@ -303,7 +350,7 @@
     </section>
 
     <!-- 3. 본문 레이아웃 -->
-    <div class="main-container">
+    <div class="main-container" id="main-sec">
         <!-- 좌측 대시보드 -->
         <aside class="left-aside">
             <div class="stat-card">
@@ -319,38 +366,63 @@
             <div class="patch-card">
                 <h3>패치 내용</h3>
                 <ul style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.8;">
-                    <li>v1.0.0 정식 오픈</li>
-                    <li>실시간 접속자 및 가입자 집계 추가</li>
-                    <li>소식 작성 및 댓글 기능 연동</li>
+                    <li>v1.1.0 이미지/GIF 첨부 기능 추가</li>
+                    <li>게시글 상세 페이지 및 댓글 스크롤 기능</li>
+                    <li>실시간 접속자 및 가입자 집계</li>
                 </ul>
             </div>
         </aside>
 
-        <!-- 우측 작성한 글들 -->
-        <main class="posts-card">
-            <h2>작성한 글들</h2>
-
-            <!-- 소식 작성 폼 (로그인 시 표출) -->
-            <div id="post-create-area" style="margin-bottom: 1.5rem; display: none;">
-                <input type="text" id="post-title-input" placeholder="제목을 입력하세요">
-                <textarea id="post-content-input" rows="3" placeholder="내용을 입력하세요"></textarea>
-                <button class="btn" id="btn-submit-post">글 작성하기</button>
+        <!-- 우측 작성한 글들 (메인 피드) -->
+        <main class="posts-card" id="feed-view">
+            <div class="posts-card-header">
+                <h2>작성한 글들</h2>
+                <button class="btn" id="btn-open-write" style="display: none;">글 작성</button>
             </div>
-            <div id="login-notice" style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">
-                * 글을 작성하시려면 우측 상단에서 로그인해 주세요.
-            </div>
-
-            <!-- 실시간 게시글 목록 -->
             <div id="posts-list">
                 <p>게시글을 불러오는 중입니다...</p>
             </div>
         </main>
+
+        <!-- 상세 페이지 뷰 (글 클릭 시 전환) -->
+        <main class="posts-card" id="detail-view">
+            <button class="btn btn-secondary" onclick="goHome()" style="margin-bottom: 1rem; width: fit-content;">← 목록으로 돌아가기</button>
+            <div id="detail-content-area"></div>
+            
+            <div class="comments-section">
+                <h3>댓글</h3>
+                <div id="detail-comments-list" style="margin-top: 1rem;">댓글을 불러오는 중...</div>
+                
+                <div id="comment-write-area" style="margin-top: 1.5rem; display: none;">
+                    <textarea id="comment-text-input" rows="2" placeholder="댓글 내용을 입력하세요..."></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
+                        <input type="file" id="comment-file-input" accept="image/*" style="width: auto; margin:0;">
+                        <button class="btn" id="btn-submit-comment">댓글 등록</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- 4. 인증 모달 (회원가입 / 로그인) -->
+    <!-- 글 작성 모달 -->
+    <div class="modal" id="write-modal">
+        <div class="modal-content">
+            <h2>새로운 소식 작성</h2>
+            <input type="text" id="post-title-input" placeholder="제목을 입력하세요">
+            <textarea id="post-content-input" rows="5" placeholder="내용을 입력하세요..."></textarea>
+            <label style="font-size: 0.9rem; font-weight: bold; display: block; margin-top: 0.5rem;">이미지 / GIF 첨부:</label>
+            <input type="file" id="post-file-input" accept="image/*">
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn" id="btn-submit-post" style="flex:1;">게시하기</button>
+                <button class="btn btn-secondary" id="btn-close-write" style="flex:1;">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그인/가입 모달 -->
     <div class="modal" id="auth-modal">
         <div class="modal-content">
-            <h2 id="modal-title" style="margin-bottom: 1rem;">로그인 / 회원가입</h2>
+            <h2>로그인 / 회원가입</h2>
             <input type="email" id="auth-email" placeholder="이메일 주소">
             <input type="password" id="auth-password" placeholder="비밀번호 (6자리 이상)">
             <input type="text" id="auth-nickname" placeholder="닉네임 (가입시에만 필요)">
@@ -358,11 +430,11 @@
                 <button class="btn" id="btn-login" style="flex:1;">로그인</button>
                 <button class="btn btn-secondary" id="btn-signup" style="flex:1;">회원가입</button>
             </div>
-            <button id="btn-close-modal" style="margin-top: 1rem; width:100%; background:none; border:none; color:#666; cursor:pointer;">닫기</button>
+            <button id="btn-close-auth" style="margin-top: 1rem; width:100%; background:none; border:none; color:#666; cursor:pointer;">닫기</button>
         </div>
     </div>
 
-    <!-- 5. 하단 푸터 및 문의 -->
+    <!-- 푸터 -->
     <footer>
         <div class="footer-top">
             <a href="mailto:swde013@gmail.com" class="contact-link">문의</a>
@@ -372,7 +444,7 @@
         </div>
     </footer>
 
-    <!-- Firebase SDK 및 로직 스크립트 -->
+    <!-- Firebase 및 앱 로직 스크립트 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -381,10 +453,9 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, query, orderBy, 
-            onSnapshot, serverTimestamp, doc, setDoc, getCountFromServer 
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Firebase 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyCCfC8wc2viAAKBXK5PHM9-jYYV6OfxI9o",
             authDomain: "korean-empire.firebaseapp.com",
@@ -400,43 +471,58 @@
         const db = getFirestore(app);
 
         let currentUser = null;
+        let currentPostId = null; // 현재 상세 보기 중인 게시글 ID
 
-        // Elements
+        // DOM 요소
         const authModal = document.getElementById('auth-modal');
+        const writeModal = document.getElementById('write-modal');
         const btnOpenAuth = document.getElementById('btn-open-auth');
-        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnCloseAuth = document.getElementById('btn-close-auth');
+        const btnOpenWrite = document.getElementById('btn-open-write');
+        const btnCloseWrite = document.getElementById('btn-close-write');
         const authNavArea = document.getElementById('auth-nav-area');
-        const postCreateArea = document.getElementById('post-create-area');
-        const loginNotice = document.getElementById('login-notice');
+        const feedView = document.getElementById('feed-view');
+        const detailView = document.getElementById('detail-view');
+        const heroSec = document.getElementById('hero-sec');
         const postsList = document.getElementById('posts-list');
         const totalUsersEl = document.getElementById('total-users-count');
 
-        // Modal Open/Close
+        // 모달 제어
         btnOpenAuth.addEventListener('click', () => authModal.style.display = 'flex');
-        btnCloseModal.addEventListener('click', () => authModal.style.display = 'none');
+        btnCloseAuth.addEventListener('click', () => authModal.style.display = 'none');
+        btnOpenWrite.addEventListener('click', () => writeModal.style.display = 'flex');
+        btnCloseWrite.addEventListener('click', () => writeModal.style.display = 'none');
 
-        // Auth State Listener
+        window.goHome = () => {
+            detailView.style.display = 'none';
+            feedView.style.display = 'flex';
+            heroSec.style.display = 'block';
+            currentPostId = null;
+            window.scrollTo(0, 0);
+        };
+
+        // 인증 상태 감지
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 authModal.style.display = 'none';
                 authNavArea.innerHTML = `
-                    <span style="margin-right:10px;">${user.displayName || user.email.split('@')[0]}님</span>
+                    <span style="color:white; font-weight:bold; margin-right:5px;">${user.displayName || user.email.split('@')[0]}님</span>
                     <button class="auth-nav-btn" id="btn-logout">로그아웃</button>
                 `;
                 document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-                postCreateArea.style.display = 'block';
-                loginNotice.style.display = 'none';
+                btnOpenWrite.style.display = 'inline-block';
+                document.getElementById('comment-write-area').style.display = 'block';
             } else {
                 authNavArea.innerHTML = `<button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>`;
                 document.getElementById('btn-open-auth').addEventListener('click', () => authModal.style.display = 'flex');
-                postCreateArea.style.display = 'none';
-                loginNotice.style.display = 'block';
+                btnOpenWrite.style.display = 'none';
+                document.getElementById('comment-write-area').style.display = 'none';
             }
             updateTotalUsersCount();
         });
 
-        // Signup
+        // 회원가입
         document.getElementById('btn-signup').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -452,7 +538,7 @@
             }
         });
 
-        // Login
+        // 로그인
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -465,39 +551,62 @@
             }
         });
 
-        // Total Users Count
+        // 실시간 가입자 수 집계
         async function updateTotalUsersCount() {
             try {
-                const coll = collection(db, "users");
-                const snapshot = await getCountFromServer(coll);
+                const snapshot = await getCountFromServer(collection(db, "users"));
                 totalUsersEl.textContent = `${snapshot.data().count} 명`;
             } catch (e) {
                 console.log(e);
             }
         }
 
-        // Create Post
+        // 이미지 파일을 Base64로 변환하는 헬퍼 함수
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // 글 작성 (이미지/GIF 포함)
         document.getElementById('btn-submit-post').addEventListener('click', async () => {
             const title = document.getElementById('post-title-input').value.trim();
             const content = document.getElementById('post-content-input').value.trim();
+            const fileInput = document.getElementById('post-file-input');
 
             if (!title || !content) return alert('제목과 내용을 작성해 주세요.');
+
+            let imageUrl = "";
+            if (fileInput.files && fileInput.files[0]) {
+                try {
+                    imageUrl = await fileToBase64(fileInput.files[0]);
+                } catch (err) {
+                    alert('이미지 변환 실패');
+                    return;
+                }
+            }
 
             try {
                 await addDoc(collection(db, "posts"), {
                     title,
                     content,
+                    imageUrl,
                     author: currentUser.displayName || currentUser.email,
                     createdAt: serverTimestamp()
                 });
                 document.getElementById('post-title-input').value = '';
                 document.getElementById('post-content-input').value = '';
+                fileInput.value = '';
+                writeModal.style.display = 'none';
             } catch (e) {
                 alert('게시 오류: ' + e.message);
             }
         });
 
-        // Realtime Posts Fetch
+        // 실시간 게시글 목록 불러오기
         const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         onSnapshot(qPosts, (snapshot) => {
             postsList.innerHTML = '';
@@ -513,61 +622,103 @@
 
                 const postEl = document.createElement('div');
                 postEl.className = 'post-item';
+                postEl.onclick = () => openDetail(postId);
                 postEl.innerHTML = `
                     <div class="post-title">${escapeHtml(post.title)}</div>
                     <div class="post-meta">작성자: ${escapeHtml(post.author)} | ${time}</div>
                     <div style="white-space: pre-wrap; margin-bottom:0.5rem;">${escapeHtml(post.content)}</div>
-                    <div class="comments-box">
-                        <div id="comments-list-${postId}">댓글 불러오는 중...</div>
-                        ${currentUser ? `
-                            <div style="display:flex; gap:0.4rem; margin-top:0.5rem;">
-                                <input type="text" id="comment-input-${postId}" placeholder="댓글 작성..." style="margin:0;">
-                                <button class="btn" onclick="window.addComment('${postId}')" style="padding:0.3rem 0.6rem; font-size:0.8rem;">등록</button>
-                            </div>
-                        ` : ''}
-                    </div>
+                    ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-img-preview">` : ''}
                 `;
                 postsList.appendChild(postEl);
-                loadComments(postId);
             });
         });
 
-        // Realtime Comments
+        // 상세 페이지 열기 (글 클릭 시)
+        window.openDetail = async (postId) => {
+            currentPostId = postId;
+            feedView.style.display = 'none';
+            heroSec.style.display = 'none';
+            detailView.style.display = 'block';
+
+            const docRef = doc(db, "posts", postId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const post = docSnap.data();
+                const time = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
+                
+                document.getElementById('detail-content-area').innerHTML = `
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${escapeHtml(post.title)}</h2>
+                    <div class="post-meta">작성자: ${escapeHtml(post.author)} | ${time}</div>
+                    <div style="white-space: pre-wrap; margin: 1rem 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(post.content)}</div>
+                    ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border-radius:6px; margin-top:1rem;">` : ''}
+                `;
+                loadComments(postId);
+            } else {
+                alert('존재하지 않는 게시글입니다.');
+                goHome();
+            }
+            window.scrollTo(0, 0);
+        };
+
+        // 실시간 댓글 불러오기
         function loadComments(postId) {
-            const cList = document.getElementById(`comments-list-${postId}`);
+            const commentsListEl = document.getElementById('detail-comments-list');
             const qComments = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
+            
             onSnapshot(qComments, (snap) => {
-                cList.innerHTML = '';
+                commentsListEl.innerHTML = '';
                 if(snap.empty) {
-                    cList.innerHTML = '<span style="font-size:0.8rem; color:#888;">댓글이 없습니다.</span>';
+                    commentsListEl.innerHTML = '<p style="color:#888; font-size:0.9rem;">작성된 댓글이 없습니다.</p>';
                     return;
                 }
                 snap.forEach(cDoc => {
                     const c = cDoc.data();
+                    const cTime = c.createdAt ? new Date(c.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
                     const div = document.createElement('div');
                     div.className = 'comment-item';
-                    div.innerHTML = `<strong>${escapeHtml(c.author)}:</strong> ${escapeHtml(c.text)}`;
-                    cList.appendChild(div);
+                    div.innerHTML = `
+                        <div class="comment-meta"><strong>${escapeHtml(c.author)}</strong> | ${cTime}</div>
+                        <div style="white-space: pre-wrap; font-size:0.95rem;">${escapeHtml(c.text)}</div>
+                        ${c.imageUrl ? `<img src="${c.imageUrl}" style="max-width:150px; border-radius:4px; margin-top:0.4rem; display:block;">` : ''}
+                    `;
+                    commentsListEl.appendChild(div);
                 });
             });
         }
 
-        window.addComment = async (postId) => {
-            const input = document.getElementById(`comment-input-${postId}`);
-            const text = input.value.trim();
-            if(!text) return;
+        // 댓글 등록 (이미지/GIF 포함)
+        document.getElementById('btn-submit-comment').addEventListener('click', async () => {
+            if (!currentPostId) return;
+            const textInput = document.getElementById('comment-text-input');
+            const fileInput = document.getElementById('comment-file-input');
+            const text = textInput.value.trim();
+
+            if (!text && (!fileInput.files || !fileInput.files[0])) return alert('댓글 내용을 입력하거나 이미지를 첨부해주세요.');
+
+            let imageUrl = "";
+            if (fileInput.files && fileInput.files[0]) {
+                try {
+                    imageUrl = await fileToBase64(fileInput.files[0]);
+                } catch (err) {
+                    alert('이미지 변환 실패');
+                    return;
+                }
+            }
 
             try {
-                await addDoc(collection(db, "posts", postId, "comments"), {
+                await addDoc(collection(db, "posts", currentPostId, "comments"), {
                     text,
+                    imageUrl,
                     author: currentUser.displayName || currentUser.email,
                     createdAt: serverTimestamp()
                 });
-                input.value = '';
+                textInput.value = '';
+                fileInput.value = '';
             } catch (e) {
                 alert('댓글 작성 실패: ' + e.message);
             }
-        };
+        });
 
         function escapeHtml(str) {
             return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
