@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-        <meta name="google-site-verification" content="6wmgBtvoq2IRZiGoY9FspMBgcY7WtydQTK6HYss2iPE" />
+    <meta name="google-site-verification" content="6wmgBtvoq2IRZiGoY9FspMBgcY7WtydQTK6HYss2iPE" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대한제국인민협회</title>
@@ -53,7 +53,7 @@
             width: auto;
             object-fit: contain;
             border-radius: 3px;
-       }
+        }
 
         .auth-nav-btn {
             background-color: transparent;
@@ -282,41 +282,17 @@
     </style>
 </head>
 <body>
-        <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCCfC8wc2viAAKBXK5PHM9-jYYV6OfxI9o",
-    authDomain: "korean-empire.firebaseapp.com",
-    projectId: "korean-empire",
-    storageBucket: "korean-empire.firebasestorage.app",
-    messagingSenderId: "1059886832097",
-    appId: "1:1059886832097:web:3f06c1e47af9a3edb05aa0",
-    measurementId: "G-2VXJ274Q5Q"
-  };
-    </div>
-</header>
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
 
     <!-- 1. 상단 네비게이션 (로고 & 회원가입/로그인) -->
- <header>
-    <div class="logo-container">
-        <img src="logo.png" alt="대한제국 태극기 로고" class="logo-img">
-        <span>대한제국인민협회</span>
-    </div>
-    <div id="auth-nav-area">
-        <button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>
-    </div>
-</header>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="대한제국 태극기 로고" class="logo-img">
+            <span>대한제국인민협회</span>
+        </div>
+        <div id="auth-nav-area">
+            <button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>
+        </div>
+    </header>
 
     <!-- 2. 메인 비주얼 (영문 타이틀 & 이미지) -->
     <section class="hero-section">
@@ -396,7 +372,7 @@
         </div>
     </footer>
 
-    <!-- Firebase SDK (v10 Modular) -->
+    <!-- Firebase SDK 및 로직 스크립트 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -408,14 +384,15 @@
             onSnapshot, serverTimestamp, doc, setDoc, getCountFromServer 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ⚠️ 본인의 Firebase 설정값으로 교체하세요
+        // Firebase 설정값
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyCCfC8wc2viAAKBXK5PHM9-jYYV6OfxI9o",
+            authDomain: "korean-empire.firebaseapp.com",
+            projectId: "korean-empire",
+            storageBucket: "korean-empire.firebasestorage.app",
+            messagingSenderId: "1059886832097",
+            appId: "1:1059886832097:web:3f06c1e47af9a3edb05aa0",
+            measurementId: "G-2VXJ274Q5Q"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -468,7 +445,6 @@
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(cred.user, { displayName: nickname });
-                // Save to users collection for counting
                 await setDoc(doc(db, "users", cred.user.uid), { email, nickname });
                 alert('가입이 완료되었습니다!');
             } catch (err) {
