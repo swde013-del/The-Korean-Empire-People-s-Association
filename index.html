@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대한제국인민협회</title>
+    <style>
+        :root {
+            --primary-color: #8b0000;
+            --bg-color: #f4f1ea;
+            --card-bg: #ffffff;
+            --text-color: #222222;
+        }
+
+        body {
+            font-family: 'Noto Serif KR', 'Malgun Gothic', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 4px solid #5a0000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #dcd6cd;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        /* Form Controls */
+        input[type="text"], input[type="email"], input[type="password"], textarea {
+            width: 100%;
+            padding: 0.6rem;
+            margin: 0.4rem 0 1rem 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #6a0000;
+        }
+
+        .btn-secondary {
+            background-color: #555;
+        }
+
+        .btn-secondary:hover {
+            background-color: #333;
+        }
+
+        /* Post & Comment List */
+        .post-item {
+            border-bottom: 1px dashed #ccc;
+            padding: 1rem 0;
+        }
+
+        .post-item:last-child {
+            border-bottom: none;
+        }
+
+        .post-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0 0 0.3rem 0;
+        }
+
+        .post-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .comments-section {
+            background-color: #f9f8f6;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+        }
+
+        .comment-item {
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e5e0d8;
+            padding: 0.4rem 0;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .auth-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>대한제국인민협회</h1>
+        <p>자유, 평등, 그리고 민국의 번영을 위한 민중의 연대</p>
+    </header>
+
+    <div class="container">
+        <!-- 인증 영역 -->
+        <div class="card" id="auth-card">
+            <div id="logged-out-view">
+                <h2>회원가입 및 로그인</h2>
+                <input type="email" id="auth-email" placeholder="이메일 주소">
+                <input type="password" id="auth-password" placeholder="비밀번호 (6자리 이상)">
+                <input type="text" id="auth-nickname" placeholder="활동명 (닉네임, 가입시에만 필수)">
+                <button id="btn-login">로그인</button>
+                <button id="btn-signup" class="btn-secondary">회원가입</button>
+            </div>
+            <div id="logged-in-view" class="hidden" class="auth-status">
+                <div>
+                    <strong><span id="user-display-name"></span></strong> 님 환영합니다.
+                </div>
+                <button id="btn-logout" class="btn-secondary">로그아웃</button>
+            </div>
+        </div>
+
+        <!-- 소식 작성 영역 (로그인 시에만 활성화) -->
+        <div class="card hidden" id="write-card">
+            <h2>새로운 소식 작성하기</h2>
+            <input type="text" id="post-title" placeholder="제목을 입력하세요">
+            <textarea id="post-content" rows="4" placeholder="대한제국인민협회에 전할 소식을 작성해 주세요."></textarea>
+            <button id="btn-submit-post">소식 게시하기</button>
+        </div>
+
+        <!-- 소식 목록 영역 -->
+        <div class="card">
+            <h2>협회 소식 및 동향</h2>
+            <div id="news-feed">
+                <p>소식을 불러오는 중입니다...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (v10 Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+            signOut, onAuthStateChanged, updateProfile 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, collection, addDoc, query, orderBy, 
+            onSnapshot, serverTimestamp, doc 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ⚠️ 본인의 Firebase 프로젝트 설정값으로 교체하세요!
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // DOM 요소
+        const loggedOutView = document.getElementById('logged-out-view');
+        const loggedInView = document.getElementById('logged-in-view');
+        const userDisplayName = document.getElementById('user-display-name');
+        const writeCard = document.getElementById('write-card');
+        const newsFeed = document.getElementById('news-feed');
+
+        // 인증 상태 감지
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                loggedOutView.classList.add('hidden');
+                loggedInView.classList.remove('hidden');
+                writeCard.classList.remove('hidden');
+                userDisplayName.textContent = user.displayName || user.email.split('@')[0];
+            } else {
+                loggedOutView.classList.remove('hidden');
+                loggedInView.classList.add('hidden');
+                writeCard.classList.add('hidden');
+            }
+        });
+
+        // 회원가입
+        document.getElementById('btn-signup').addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const nickname = document.getElementById('auth-nickname').value || email.split('@')[0];
+
+            if(!email || !password) return alert('이메일과 비밀번호를 입력해주세요.');
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, { displayName: nickname });
+                alert('대한제국인민협회 가입이 완료되었습니다!');
+                location.reload();
+            } catch (error) {
+                alert('가입 실패: ' + error.message);
+            }
+        });
+
+        // 로그인
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert('로그인되었습니다.');
+            } catch (error) {
+                alert('로그인 실패: ' + error.message);
+            }
+        });
+
+        // 로그아웃
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        // 소식 작성
+        document.getElementById('btn-submit-post').addEventListener('click', async () => {
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+
+            if (!title || !content) return alert('제목과 내용을 모두 입력해주세요.');
+
+            try {
+                await addDoc(collection(db, "posts"), {
+                    title: title,
+                    content: content,
+                    author: currentUser.displayName || currentUser.email,
+                    authorId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-content').value = '';
+                alert('소식이 성공적으로 게시되었습니다.');
+            } catch (error) {
+                alert('게시 실패: ' + error.message);
+            }
+        });
+
+        // 실시간 소식 및 댓글 불러오기
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            newsFeed.innerHTML = '';
+            if (snapshot.empty) {
+                newsFeed.innerHTML = '<p>등록된 소식이 없습니다.</p>';
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const post = docSnap.data();
+                const postId = docSnap.id;
+                const date = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
+
+                const postEl = document.createElement('div');
+                postEl.className = 'post-item';
+                postEl.innerHTML = `
+                    <div class="post-title">${escapeHtml(post.title)}</div>
+                    <div class="post-meta">작성자: ${escapeHtml(post.author)} | ${date}</div>
+                    <div class="post-content">${escapeHtml(post.content).replace(/\n/g, '<br>')}</div>
+                    
+                    <div class="comments-section">
+                        <h4>댓글</h4>
+                        <div id="comments-${postId}">불러오는 중...</div>
+                        ${currentUser ? `
+                            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                                <input type="text" id="comment-input-${postId}" placeholder="댓글 작성..." style="margin:0;">
+                                <button onclick="window.addComment('${postId}')" style="padding:0.4rem 0.8rem;">등록</button>
+                            </div>
+                        ` : '<p style="font-size:0.8rem; color:#777;">댓글을 작성하려면 로그인하세요.</p>'}
+                    </div>
+                `;
+                newsFeed.appendChild(postEl);
+
+                // 해당 게시물의 실시간 댓글 구독
+                loadComments(postId);
+            });
+        });
+
+        // 댓글 불러오기 함수
+        function loadComments(postId) {
+            const commentsContainer = document.getElementById(`comments-${postId}`);
+            const qComments = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
+            
+            onSnapshot(qComments, (snapshot) => {
+                commentsContainer.innerHTML = '';
+                if(snapshot.empty) {
+                    commentsContainer.innerHTML = '<p style="font-size:0.8rem; color:#888;">댓글이 없습니다.</p>';
+                    return;
+                }
+                snapshot.forEach(cDoc => {
+                    const comment = cDoc.data();
+                    const cEl = document.createElement('div');
+                    cEl.className = 'comment-item';
+                    cEl.innerHTML = `<strong>${escapeHtml(comment.author)}:</strong> ${escapeHtml(comment.text)}`;
+                    commentsContainer.appendChild(cEl);
+                });
+            });
+        }
+
+        // 댓글 추가 함수 (전역 연결)
+        window.addComment = async (postId) => {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if(!text) return;
+
+            try {
+                await addDoc(collection(db, "posts", postId, "comments"), {
+                    text: text,
+                    author: currentUser.displayName || currentUser.email,
+                    authorId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                });
+                input.value = '';
+            } catch (error) {
+                alert('댓글 작성 실패: ' + error.message);
+            }
+        };
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+    </script>
+</body>
+</html>
