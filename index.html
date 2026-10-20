@@ -4,14 +4,13 @@
     <meta name="google-site-verification" content="6wmgBtvoq2IRZiGoY9FspMBgcY7WtydQTK6HYss2iPE" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>알리아로아</title>
+    <title>알로아로아</title>
     <style>
         :root {
             --header-bg: #80effe; /* 상단 민트색/하늘색 */
             --header-text: #000000;
             --border-color: #000000;
             --border-width: 3px;
-            --gold-color: #d4af37;
         }
 
         * {
@@ -224,15 +223,17 @@
 
         .stats-banner {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            align-items: center;
             padding: 0.8rem;
             text-align: center;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
 
         .stats-banner span {
             color: #e60000;
+            margin-left: 5px;
         }
 
         /* ---------------- 상세 페이지 & 댓글 ---------------- */
@@ -400,7 +401,6 @@
             overflow-y: auto;
         }
 
-        /* 프로필 모달 커스텀 */
         .profile-header-area {
             display: flex;
             align-items: center;
@@ -558,8 +558,6 @@
         <!-- 우측 사이드바 영역 -->
         <aside class="right-sidebar">
             <div class="bordered-box stats-banner">
-                <div>가입자 <span id="total-users-count">0</span>명</div>
-                <div>|</div>
                 <div>실시간 접속 <span id="online-users-count">1</span>명</div>
             </div>
 
@@ -673,7 +671,7 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, query, orderBy, where, getDocs,
-            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, updateDoc, runTransaction
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, updateDoc, increment
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -722,7 +720,6 @@
         const postsList = document.getElementById('posts-list');
         const recentPostsSide = document.getElementById('recent-posts-side');
         const topPostsSide = document.getElementById('top-posts-side');
-        const totalUsersEl = document.getElementById('total-users-count');
         const onlineUsersEl = document.getElementById('online-users-count');
 
         btnOpenAuth.addEventListener('click', () => authModal.style.display = 'flex');
@@ -760,24 +757,19 @@
             onlineUsersEl.textContent = Math.max(1, activeCount);
         });
 
-        // ----------------------------------------------------
-        // 👑 로그인 / 사용자 프로필 및 관리자 금색 스타일 적용
-        // ----------------------------------------------------
+        // 인증 및 프로필 로드
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 authModal.style.display = 'none';
                 
-                // Firestore에서 프로필 정보 가져오기
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));
                 let nickname = user.displayName || user.email.split('@')[0];
-                let photoURL = user.photoURL || '';
                 let isAdmin = false;
 
                 if (userDocSnap.exists()) {
                     const uData = userDocSnap.data();
                     if (uData.nickname) nickname = uData.nickname;
-                    if (uData.photoURL) photoURL = uData.photoURL;
                     if (uData.isAdmin) isAdmin = true;
                 }
 
@@ -794,17 +786,16 @@
                 authNavArea.innerHTML = `<button class="btn-header" id="btn-open-auth">로그인 / 회원가입</button>`;
                 document.getElementById('btn-open-auth').addEventListener('click', () => authModal.style.display = 'flex');
             }
-            updateTotalUsersCount();
         });
 
-        // 내 프로필 수정 창 열기
+        // 내 프로필 수정 열기
         window.openMyProfileEdit = () => {
             if (!currentUser) return;
             document.getElementById('edit-nickname-input').value = currentUser.displayName || '';
             editProfileModal.style.display = 'flex';
         };
 
-        // 내 프로필 저장
+        // 내 프로필 저장 (안전 이미지 업로드)
         document.getElementById('btn-save-profile').addEventListener('click', async () => {
             if (!currentUser) return;
             const newNickname = document.getElementById('edit-nickname-input').value.trim();
@@ -812,28 +803,23 @@
 
             if (!newNickname) return alert('닉네임을 입력해 주세요.');
 
-            let photoURL = currentUser.photoURL || '';
-            if (avatarFile) {
-                try {
-                    photoURL = await fileToBase64(avatarFile);
-                } catch (e) {
-                    alert('프로필 이미지 변환 실패');
-                    return;
-                }
-            }
-
             try {
-                await updateProfile(currentUser, { displayName: newNickname, photoURL: photoURL });
+                let photoURL = "";
+                if (avatarFile) {
+                    photoURL = await fileToBase64(avatarFile);
+                }
+
+                await updateProfile(currentUser, { displayName: newNickname });
                 await setDoc(doc(db, "users", currentUser.uid), {
                     nickname: newNickname,
-                    photoURL: photoURL
+                    ...(photoURL && { photoURL: photoURL })
                 }, { merge: true });
 
-                alert('프로필이 수정되었습니다!');
+                alert('프로필이 정상 변경되었습니다!');
                 editProfileModal.style.display = 'none';
                 location.reload();
             } catch (e) {
-                alert('프로필 수정 오류: ' + e.message);
+                alert('프로필 수정 중 오류 발생: ' + e.message);
             }
         });
 
@@ -846,12 +832,10 @@
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(cred.user, { displayName: nickname });
-                
-                // 첫 번째 회원 또는 특정 계정에 관리자 권한 부여 가능
                 await setDoc(doc(db, "users", cred.user.uid), { 
                     email, 
                     nickname, 
-                    isAdmin: true // 기본 관리자 권한 적용
+                    isAdmin: true 
                 });
                 alert('가입이 완료되었습니다!');
             } catch (err) {
@@ -872,13 +856,6 @@
             }
         });
 
-        async function updateTotalUsersCount() {
-            try {
-                const snapshot = await getCountFromServer(collection(db, "users"));
-                totalUsersEl.textContent = snapshot.data().count;
-            } catch (e) { console.log(e); }
-        }
-
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -898,9 +875,7 @@
             return `${month}.${day}. ${hours}:${minutes}`;
         }
 
-        // ----------------------------------------------------
-        // 🔍 유저 프로필 및 게시글/댓글 집계 모달 불러오기
-        // ----------------------------------------------------
+        // 유저 프로필 조회 모달
         window.openUserProfile = async (authorName) => {
             activeProfileAuthor = authorName;
             const avatarEl = document.getElementById('modal-user-avatar');
@@ -918,14 +893,12 @@
             cachedUserComments = [];
 
             try {
-                // 1. 해당 유저가 작성한 글 검색
                 const qUserPosts = query(collection(db, "posts"), where("author", "==", authorName));
                 const postSnaps = await getDocs(qUserPosts);
                 postSnaps.forEach(docSnap => {
                     cachedUserPosts.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
-                // 2. 해당 유저가 작성한 댓글 검색
                 const allPostsSnap = await getDocs(collection(db, "posts"));
                 for (const pDoc of allPostsSnap.docs) {
                     const qComments = query(collection(db, "posts", pDoc.id, "comments"), where("author", "==", authorName));
@@ -998,55 +971,41 @@
         };
 
         // ----------------------------------------------------
-        // 🗳️ 추천 / 비추천 로직
+        // 🗳️ 오류 없는 단순화된 추천 / 비추천 투표 시스템
         // ----------------------------------------------------
-        function getVoterKey() {
-            return currentUser ? `user_${currentUser.uid}` : `ip_${userIp.replace(/\./g, '_')}`;
-        }
-
         async function handleVote(targetVote) {
             if (!currentPostId) return;
-            const voterKey = getVoterKey();
-            const voteDocRef = doc(db, "posts", currentPostId, "votes", voterKey);
+            const voteKey = `voted_${currentPostId}`;
+            const previousVote = localStorage.getItem(voteKey);
+
             const postRef = doc(db, "posts", currentPostId);
 
             try {
-                await runTransaction(db, async (transaction) => {
-                    const voteSnap = await transaction.get(voteDocRef);
-                    const postSnap = await transaction.get(postRef);
-                    
-                    if (!postSnap.exists()) return;
+                if (previousVote === targetVote) {
+                    // 이미 누른 버튼 취소
+                    if (targetVote === 'like') await updateDoc(postRef, { likes: increment(-1) });
+                    if (targetVote === 'dislike') await updateDoc(postRef, { dislikes: increment(-1) });
+                    localStorage.removeItem(voteKey);
+                } else {
+                    // 이전 투표 차감 후 신규 투표 누적
+                    if (previousVote === 'like') await updateDoc(postRef, { likes: increment(-1) });
+                    if (previousVote === 'dislike') await updateDoc(postRef, { dislikes: increment(-1) });
 
-                    let currentLikes = postSnap.data().likes || 0;
-                    let currentDislikes = postSnap.data().dislikes || 0;
-                    let previousVote = voteSnap.exists() ? voteSnap.data().type : 'none';
+                    if (targetVote === 'like') await updateDoc(postRef, { likes: increment(1) });
+                    if (targetVote === 'dislike') await updateDoc(postRef, { dislikes: increment(1) });
 
-                    if (previousVote === targetVote) {
-                        if (targetVote === 'like') currentLikes = Math.max(0, currentLikes - 1);
-                        if (targetVote === 'dislike') currentDislikes = Math.max(0, currentDislikes - 1);
-                        transaction.delete(voteDocRef);
-                    } else {
-                        if (previousVote === 'like') currentLikes = Math.max(0, currentLikes - 1);
-                        if (previousVote === 'dislike') currentDislikes = Math.max(0, currentDislikes - 1);
-
-                        if (targetVote === 'like') currentLikes++;
-                        if (targetVote === 'dislike') currentDislikes++;
-
-                        transaction.set(voteDocRef, { type: targetVote, updatedAt: serverTimestamp() });
-                    }
-
-                    transaction.update(postRef, { likes: currentLikes, dislikes: currentDislikes });
-                });
+                    localStorage.setItem(voteKey, targetVote);
+                }
             } catch (e) {
                 console.error(e);
-                alert('투표 처리 중 오류가 발생했습니다.');
+                alert('투표 처리 실패: ' + e.message);
             }
         }
 
         document.getElementById('btn-vote-like').addEventListener('click', () => handleVote('like'));
         document.getElementById('btn-vote-dislike').addEventListener('click', () => handleVote('dislike'));
 
-        // 글 작성
+        // 글 작성 (비회원/회원 구분 없이 누구나 가능)
         document.getElementById('btn-submit-post').addEventListener('click', async () => {
             const title = document.getElementById('post-title-input').value.trim();
             const content = document.getElementById('post-content-input').value.trim();
@@ -1163,20 +1122,16 @@
                 }
             });
 
-            const voterKey = getVoterKey();
-            onSnapshot(doc(db, "posts", postId, "votes", voterKey), (voteSnap) => {
-                const likeBtn = document.getElementById('btn-vote-like');
-                const dislikeBtn = document.getElementById('btn-vote-dislike');
-                
-                likeBtn.classList.remove('active');
-                dislikeBtn.classList.remove('active');
+            // 내 투표 버튼 하이라이트
+            const userVote = localStorage.getItem(`voted_${postId}`);
+            const likeBtn = document.getElementById('btn-vote-like');
+            const dislikeBtn = document.getElementById('btn-vote-dislike');
+            
+            likeBtn.classList.remove('active');
+            dislikeBtn.classList.remove('active');
 
-                if (voteSnap.exists()) {
-                    const voteType = voteSnap.data().type;
-                    if (voteType === 'like') likeBtn.classList.add('active');
-                    if (voteType === 'dislike') dislikeBtn.classList.add('active');
-                }
-            });
+            if (userVote === 'like') likeBtn.classList.add('active');
+            if (userVote === 'dislike') dislikeBtn.classList.add('active');
 
             loadComments(postId);
             window.scrollTo(0, 0);
@@ -1216,7 +1171,7 @@
             });
         }
 
-        // 댓글 등록
+        // 댓글 등록 (누구나 가능)
         document.getElementById('btn-submit-comment').addEventListener('click', async () => {
             if (!currentPostId) return;
             const textInput = document.getElementById('comment-text-input');
