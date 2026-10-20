@@ -4,7 +4,7 @@
     <meta name="google-site-verification" content="6wmgBtvoq2IRZiGoY9FspMBgcY7WtydQTK6HYss2iPE" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대한제국인민협회</title>
+    <title>알로아로아</title>
     <style>
         :root {
             --header-bg: #e60000;
@@ -261,7 +261,7 @@
             padding-top: 1.5rem;
         }
 
-        /* 댓글 스타일 (왼쪽 프로필 + 오른쪽 내용) */
+        /* 댓글 스타일 */
         .comment-item {
             display: flex;
             gap: 12px;
@@ -485,7 +485,7 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, query, orderBy, 
-            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, deleteDoc
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -548,9 +548,7 @@
             window.scrollTo(0, 0);
         };
 
-        // ----------------------------------------------------
-        // 🌐 비로그인 포함 실시간 접속자 수 (Heartbeat) 시스템
-        // ----------------------------------------------------
+        // 🌐 접속 신호 (Heartbeat)
         async function updateHeartbeat() {
             try {
                 await setDoc(doc(db, "active_sessions", sessionId), {
@@ -559,11 +557,10 @@
             } catch (e) { console.log(e); }
         }
 
-        // 10초마다 접속 신호 갱신
         updateHeartbeat();
         setInterval(updateHeartbeat, 10000);
 
-        // 실시간 접속자 수 감지 (최근 30초 내 활동 세션 카운트)
+        // 실시간 접속자 수 감지
         onSnapshot(collection(db, "active_sessions"), (snapshot) => {
             const now = Date.now();
             let activeCount = 0;
@@ -571,7 +568,7 @@
                 const data = sessionDoc.data();
                 if (data.lastSeen) {
                     const lastSeenTime = data.lastSeen.toDate().getTime();
-                    if (now - lastSeenTime < 30000) { // 30초 이내 신호만 카운트
+                    if (now - lastSeenTime < 30000) {
                         activeCount++;
                     }
                 }
@@ -579,9 +576,7 @@
             onlineUsersEl.textContent = `${Math.max(1, activeCount)} 명`;
         });
 
-        // ----------------------------------------------------
-        // 🔐 인증 및 게시글/댓글 로직
-        // ----------------------------------------------------
+        // 인증 상태 감지
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
@@ -737,7 +732,7 @@
             window.scrollTo(0, 0);
         };
 
-        // 실시간 댓글 불러오기
+        // 실시간 댓글
         function loadComments(postId) {
             const commentsListEl = document.getElementById('detail-comments-list');
             const qComments = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
