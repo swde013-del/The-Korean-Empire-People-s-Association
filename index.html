@@ -11,6 +11,7 @@
             --header-text: #000000;
             --border-color: #000000;
             --border-width: 3px;
+            --gold-color: #d4af37;
         }
 
         * {
@@ -68,6 +69,25 @@
 
         .btn-header:hover {
             background-color: #f0f0f0;
+        }
+
+        /* 관리자 금색 스타일 */
+        .admin-nickname {
+            color: #b8860b !important;
+            font-weight: 900 !important;
+            text-shadow: 0px 0px 3px rgba(212, 175, 55, 0.6);
+            cursor: pointer;
+        }
+
+        .admin-badge {
+            background: linear-gradient(45deg, #ffd700, #b8860b);
+            color: #000;
+            font-size: 0.7rem;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 4px;
+            font-weight: bold;
+            border: 1px solid #000;
         }
 
         /* 2. 본문 메인 레이아웃 */
@@ -137,7 +157,6 @@
             grid-template-columns: 1fr 180px 180px;
             padding: 0.8rem 1rem;
             border-bottom: 1px solid #ccc;
-            cursor: pointer;
             align-items: center;
         }
 
@@ -150,12 +169,21 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            cursor: pointer;
         }
 
         .post-row-author, .post-row-date {
             text-align: center;
             font-size: 0.95rem;
             color: #333;
+        }
+
+        .clickable-user {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .clickable-user:hover {
+            color: #27ae60;
         }
 
         /* ---------------- 우측 영역 ---------------- */
@@ -207,13 +235,12 @@
             color: #e60000;
         }
 
-        /* ---------------- 상세 페이지 & 이미지 스케치 스타일 댓글 ---------------- */
+        /* ---------------- 상세 페이지 & 댓글 ---------------- */
         #detail-view {
             display: none;
             padding: 1.5rem;
         }
 
-        /* 원형 추천 / 비추천 버튼 컨테이너 */
         .vote-container {
             display: flex;
             justify-content: center;
@@ -255,7 +282,6 @@
             color: #000000;
         }
 
-        /* 스케치 이미지 스타일 댓글 박스 전체 감싸기 */
         .comments-outer-box {
             border: var(--border-width) solid var(--border-color);
             padding: 1.2rem;
@@ -283,8 +309,8 @@
         }
 
         .comment-avatar {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: #000000;
             color: #ffffff;
@@ -293,9 +319,17 @@
             justify-content: center;
             font-weight: bold;
             flex-shrink: 0;
+            border: 2px solid #000;
+            overflow: hidden;
+            cursor: pointer;
         }
 
-        /* 댓글 입력 폼 */
+        .comment-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .comment-input-box {
             margin-top: 1.5rem;
         }
@@ -360,10 +394,86 @@
             padding: 2rem;
             border-radius: 8px;
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             border: var(--border-width) solid var(--border-color);
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        /* 프로필 모달 커스텀 */
+        .profile-header-area {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            border-bottom: 2px solid #000;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-large-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border: 3px solid #000;
+            overflow: hidden;
+        }
+
+        .profile-large-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-stats-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .profile-tab-bar {
+            display: flex;
+            border-bottom: 2px solid #000;
+            margin-bottom: 1rem;
+        }
+
+        .profile-tab {
+            flex: 1;
+            padding: 0.6rem;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            background: #eee;
+            border-right: 1px solid #ccc;
+        }
+
+        .profile-tab.active {
+            background: #000;
+            color: #fff;
+        }
+
+        .user-activity-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .activity-item:hover {
+            font-weight: bold;
+            color: #27ae60;
         }
 
         footer {
@@ -394,13 +504,9 @@
     <!-- 2. 본문 레이아웃 -->
     <div class="main-container">
         
-        <!-- 좌측 메인 영역 (글 목록 또는 상세 페이지) -->
+        <!-- 좌측 메인 영역 -->
         <main class="left-content">
-            
-            <!-- 피드 뷰 (목록) -->
-            <div id="feed-view" class="bordered-box">
-                
-                <!-- 스크롤 게시글 창 -->
+
                 <div class="post-list-scroll" id="posts-list">
                     <p style="text-align:center; padding: 2rem;">게시글을 불러오는 중입니다...</p>
                 </div>
@@ -411,7 +517,6 @@
                 <button class="btn btn-secondary" onclick="goHome()" style="margin-bottom: 1rem;">← 목록으로 돌아가기</button>
                 <div id="detail-content-area"></div>
                 
-                <!-- 추천 / 비추천 원형 버튼 영역 -->
                 <div class="vote-container">
                     <div class="circle-btn btn-like" id="btn-vote-like">
                         <span>추천</span>
@@ -423,7 +528,6 @@
                     </div>
                 </div>
 
-                <!-- 댓글 박스 전체 -->
                 <div class="comments-outer-box">
                     <div class="comments-title-area">
                         <h3>댓글</h3>
@@ -431,7 +535,6 @@
                     
                     <div id="detail-comments-list">댓글을 불러오는 중...</div>
                     
-                    <!-- 댓글 작성 영역 -->
                     <div class="comment-input-box">
                         <textarea id="comment-text-input" rows="3" placeholder="댓글 내용을 입력하세요..."></textarea>
                         <div class="comment-bottom-bar">
@@ -446,15 +549,12 @@
 
         <!-- 우측 사이드바 영역 -->
         <aside class="right-sidebar">
-            
-            <!-- 상단 접속자 / 가입자 요약 정보 -->
             <div class="bordered-box stats-banner">
                 <div>가입자 <span id="total-users-count">0</span>명</div>
                 <div>|</div>
                 <div>실시간 접속 <span id="online-users-count">1</span>명</div>
             </div>
 
-            <!-- 실시간 글들 -->
             <div class="bordered-box side-card" style="flex: 1;">
                 <div class="side-card-title">실시간 글들</div>
                 <div id="recent-posts-side">
@@ -462,16 +562,63 @@
                 </div>
             </div>
 
-            <!-- 추천이 가장 많은 글들 -->
             <div class="bordered-box side-card" style="flex: 1.2;">
                 <div class="side-card-title">추천이 가장 많은 글들</div>
                 <div id="top-posts-side">
                     <div class="side-list-item">불러오는 중...</div>
                 </div>
             </div>
-
         </aside>
 
+    </div>
+
+    <!-- 유저 프로필 조회 모달 -->
+    <div class="modal" id="user-profile-modal">
+        <div class="modal-content">
+            <div class="profile-header-area">
+                <div class="profile-large-avatar" id="modal-user-avatar">?</div>
+                <div>
+                    <h2 id="modal-user-nickname" style="font-size:1.3rem;">닉네임</h2>
+                    <div class="profile-stats-row">
+                        <div>작성 글: <strong id="modal-user-posts-count">0</strong>개</div>
+                        <div>|</div>
+                        <div>작성 댓글: <strong id="modal-user-comments-count">0</strong>개</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-tab-bar">
+                <div class="profile-tab active" id="tab-posts" onclick="switchProfileTab('posts')">작성한 글</div>
+                <div class="profile-tab" id="tab-comments" onclick="switchProfileTab('comments')">작성한 댓글</div>
+            </div>
+
+            <div class="user-activity-list" id="modal-activity-list">
+                <p style="color:#777; padding:0.5rem;">활동 내역을 불러오는 중...</p>
+            </div>
+
+            <div style="margin-top:1.2rem; text-align:right;">
+                <button class="btn btn-secondary" onclick="document.getElementById('user-profile-modal').style.display='none'">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 내 프로필 수정 모달 -->
+    <div class="modal" id="edit-profile-modal">
+        <div class="modal-content">
+            <h2>내 프로필 수정</h2>
+            <div style="margin-top:1rem;">
+                <label style="font-weight:bold; font-size:0.9rem;">새 닉네임:</label>
+                <input type="text" id="edit-nickname-input" placeholder="새로운 닉네임을 입력하세요">
+                
+                <label style="font-weight:bold; font-size:0.9rem; display:block; margin-top:0.5rem;">프로필 사진 (이미지/GIF):</label>
+                <input type="file" id="edit-avatar-input" accept="image/*">
+                
+                <div style="display:flex; gap:0.5rem; margin-top:1.2rem;">
+                    <button class="btn" id="btn-save-profile" style="flex:1;">저장하기</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('edit-profile-modal').style.display='none'" style="flex:1;">취소</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 글 작성 모달 -->
@@ -517,8 +664,8 @@
             signOut, onAuthStateChanged, updateProfile 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
-            getFirestore, collection, addDoc, query, orderBy, 
-            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, updateDoc, increment, runTransaction
+            getFirestore, collection, addDoc, query, orderBy, where, getDocs,
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, updateDoc, runTransaction
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -538,6 +685,9 @@
         let currentUser = null;
         let currentPostId = null;
         let userIp = "127.0.0.1";
+        let activeProfileAuthor = null;
+        let cachedUserPosts = [];
+        let cachedUserComments = [];
 
         let sessionId = localStorage.getItem('site_session_id');
         if (!sessionId) {
@@ -552,6 +702,8 @@
 
         const authModal = document.getElementById('auth-modal');
         const writeModal = document.getElementById('write-modal');
+        const userProfileModal = document.getElementById('user-profile-modal');
+        const editProfileModal = document.getElementById('edit-profile-modal');
         const btnOpenAuth = document.getElementById('btn-open-auth');
         const btnCloseAuth = document.getElementById('btn-close-auth');
         const btnOpenWrite = document.getElementById('btn-open-write');
@@ -580,9 +732,7 @@
         // 접속 신호 (Heartbeat)
         async function updateHeartbeat() {
             try {
-                await setDoc(doc(db, "active_sessions", sessionId), {
-                    lastSeen: serverTimestamp()
-                });
+                await setDoc(doc(db, "active_sessions", sessionId), { lastSeen: serverTimestamp() });
             } catch (e) { console.log(e); }
         }
 
@@ -602,12 +752,33 @@
             onlineUsersEl.textContent = Math.max(1, activeCount);
         });
 
+        // ----------------------------------------------------
+        // 👑 로그인 / 사용자 프로필 및 관리자 금색 스타일 적용
+        // ----------------------------------------------------
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 authModal.style.display = 'none';
+                
+                // Firestore에서 프로필 정보 가져오기
+                const userDocSnap = await getDoc(doc(db, "users", user.uid));
+                let nickname = user.displayName || user.email.split('@')[0];
+                let photoURL = user.photoURL || '';
+                let isAdmin = false;
+
+                if (userDocSnap.exists()) {
+                    const uData = userDocSnap.data();
+                    if (uData.nickname) nickname = uData.nickname;
+                    if (uData.photoURL) photoURL = uData.photoURL;
+                    if (uData.isAdmin) isAdmin = true;
+                }
+
+                const adminBadgeHtml = isAdmin ? `<span class="admin-badge">ADMIN</span>` : '';
+                const nameClass = isAdmin ? `admin-nickname` : `clickable-user`;
+
                 authNavArea.innerHTML = `
-                    <span style="font-weight:bold; margin-right:5px;">${user.displayName || user.email.split('@')[0]}님</span>
+                    <span class="${nameClass}" onclick="openMyProfileEdit()" style="margin-right:8px;">${escapeHtml(nickname)}${adminBadgeHtml}</span>
+                    <button class="btn-header" onclick="openMyProfileEdit()">프로필 수정</button>
                     <button class="btn-header" id="btn-logout">로그아웃</button>
                 `;
                 document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
@@ -618,6 +789,47 @@
             updateTotalUsersCount();
         });
 
+        // 내 프로필 수정 창 열기
+        window.openMyProfileEdit = () => {
+            if (!currentUser) return;
+            document.getElementById('edit-nickname-input').value = currentUser.displayName || '';
+            editProfileModal.style.display = 'flex';
+        };
+
+        // 내 프로필 저장
+        document.getElementById('btn-save-profile').addEventListener('click', async () => {
+            if (!currentUser) return;
+            const newNickname = document.getElementById('edit-nickname-input').value.trim();
+            const avatarFile = document.getElementById('edit-avatar-input').files[0];
+
+            if (!newNickname) return alert('닉네임을 입력해 주세요.');
+
+            let photoURL = currentUser.photoURL || '';
+            if (avatarFile) {
+                try {
+                    photoURL = await fileToBase64(avatarFile);
+                } catch (e) {
+                    alert('프로필 이미지 변환 실패');
+                    return;
+                }
+            }
+
+            try {
+                await updateProfile(currentUser, { displayName: newNickname, photoURL: photoURL });
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    nickname: newNickname,
+                    photoURL: photoURL
+                }, { merge: true });
+
+                alert('프로필이 수정되었습니다!');
+                editProfileModal.style.display = 'none';
+                location.reload();
+            } catch (e) {
+                alert('프로필 수정 오류: ' + e.message);
+            }
+        });
+
+        // 회원가입
         document.getElementById('btn-signup').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -626,13 +838,20 @@
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(cred.user, { displayName: nickname });
-                await setDoc(doc(db, "users", cred.user.uid), { email, nickname });
+                
+                // 첫 번째 회원 또는 특정 계정에 관리자 권한 부여 가능
+                await setDoc(doc(db, "users", cred.user.uid), { 
+                    email, 
+                    nickname, 
+                    isAdmin: true // 기본 관리자 권한 적용
+                });
                 alert('가입이 완료되었습니다!');
             } catch (err) {
                 alert('가입 오류: ' + err.message);
             }
         });
 
+        // 로그인
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -672,13 +891,112 @@
         }
 
         // ----------------------------------------------------
-        // 🗳️ 1인 1회 추천 / 비추천 교체 로직
+        // 🔍 유저 프로필 및 게시글/댓글 집계 모달 불러오기
+        // ----------------------------------------------------
+        window.openUserProfile = async (authorName) => {
+            activeProfileAuthor = authorName;
+            const avatarEl = document.getElementById('modal-user-avatar');
+            const nicknameEl = document.getElementById('modal-user-nickname');
+            const postsCountEl = document.getElementById('modal-user-posts-count');
+            const commentsCountEl = document.getElementById('modal-user-comments-count');
+            const activityListEl = document.getElementById('modal-activity-list');
+
+            nicknameEl.textContent = authorName;
+            avatarEl.innerHTML = authorName.charAt(0).toUpperCase();
+            activityListEl.innerHTML = '<p style="color:#777; padding:0.5rem;">활동 내역을 조회 중입니다...</p>';
+            userProfileModal.style.display = 'flex';
+
+            cachedUserPosts = [];
+            cachedUserComments = [];
+
+            try {
+                // 1. 해당 유저가 작성한 글 검색
+                const qUserPosts = query(collection(db, "posts"), where("author", "==", authorName));
+                const postSnaps = await getDocs(qUserPosts);
+                postSnaps.forEach(docSnap => {
+                    cachedUserPosts.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // 2. 해당 유저가 작성한 댓글 검색
+                const allPostsSnap = await getDocs(collection(db, "posts"));
+                for (const pDoc of allPostsSnap.docs) {
+                    const qComments = query(collection(db, "posts", pDoc.id, "comments"), where("author", "==", authorName));
+                    const cSnaps = await getDocs(qComments);
+                    cSnaps.forEach(cSnap => {
+                        cachedUserComments.push({
+                            postId: pDoc.id,
+                            postTitle: pDoc.data().title,
+                            ...cSnap.data()
+                        });
+                    });
+                }
+
+                postsCountEl.textContent = cachedUserPosts.length;
+                commentsCountEl.textContent = cachedUserComments.length;
+
+                switchProfileTab('posts');
+            } catch (e) {
+                console.error(e);
+                activityListEl.innerHTML = '<p style="color:red; padding:0.5rem;">데이터를 불러오는 중 오류가 발생했습니다.</p>';
+            }
+        };
+
+        window.switchProfileTab = (tab) => {
+            const tabPosts = document.getElementById('tab-posts');
+            const tabComments = document.getElementById('tab-comments');
+            const activityListEl = document.getElementById('modal-activity-list');
+
+            activityListEl.innerHTML = '';
+
+            if (tab === 'posts') {
+                tabPosts.classList.add('active');
+                tabComments.classList.remove('active');
+
+                if (cachedUserPosts.length === 0) {
+                    activityListEl.innerHTML = '<p style="color:#888; padding:0.5rem;">작성한 글이 없습니다.</p>';
+                    return;
+                }
+
+                cachedUserPosts.forEach(post => {
+                    const div = document.createElement('div');
+                    div.className = 'activity-item';
+                    div.onclick = () => {
+                        userProfileModal.style.display = 'none';
+                        openDetail(post.id);
+                    };
+                    div.textContent = `• ${post.title} (${formatDateShort(post.createdAt)})`;
+                    activityListEl.appendChild(div);
+                });
+            } else {
+                tabComments.classList.add('active');
+                tabPosts.classList.remove('active');
+
+                if (cachedUserComments.length === 0) {
+                    activityListEl.innerHTML = '<p style="color:#888; padding:0.5rem;">작성한 댓글이 없습니다.</p>';
+                    return;
+                }
+
+                cachedUserComments.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'activity-item';
+                    div.onclick = () => {
+                        userProfileModal.style.display = 'none';
+                        openDetail(c.postId);
+                    };
+                    div.textContent = `💬 [글: ${c.postTitle}] ${c.text}`;
+                    activityListEl.appendChild(div);
+                });
+            }
+        };
+
+        // ----------------------------------------------------
+        // 🗳️ 추천 / 비추천 로직
         // ----------------------------------------------------
         function getVoterKey() {
             return currentUser ? `user_${currentUser.uid}` : `ip_${userIp.replace(/\./g, '_')}`;
         }
 
-        async function handleVote(targetVote) { // targetVote: 'like' 또는 'dislike'
+        async function handleVote(targetVote) {
             if (!currentPostId) return;
             const voterKey = getVoterKey();
             const voteDocRef = doc(db, "posts", currentPostId, "votes", voterKey);
@@ -696,12 +1014,10 @@
                     let previousVote = voteSnap.exists() ? voteSnap.data().type : 'none';
 
                     if (previousVote === targetVote) {
-                        // 이미 누른 버튼 취소
                         if (targetVote === 'like') currentLikes = Math.max(0, currentLikes - 1);
                         if (targetVote === 'dislike') currentDislikes = Math.max(0, currentDislikes - 1);
                         transaction.delete(voteDocRef);
                     } else {
-                        // 투표 전환 또는 신규 투표
                         if (previousVote === 'like') currentLikes = Math.max(0, currentLikes - 1);
                         if (previousVote === 'dislike') currentDislikes = Math.max(0, currentDislikes - 1);
 
@@ -711,10 +1027,7 @@
                         transaction.set(voteDocRef, { type: targetVote, updatedAt: serverTimestamp() });
                     }
 
-                    transaction.update(postRef, {
-                        likes: currentLikes,
-                        dislikes: currentDislikes
-                    });
+                    transaction.update(postRef, { likes: currentLikes, dislikes: currentDislikes });
                 });
             } catch (e) {
                 console.error(e);
@@ -764,7 +1077,7 @@
             }
         });
 
-        // 실시간 게시글 불러오기 및 추천수 기준 인기글 정렬
+        // 실시간 게시글 목록 불러오기
         const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         onSnapshot(qPosts, (snapshot) => {
             postsList.innerHTML = '';
@@ -789,10 +1102,9 @@
 
                 const rowEl = document.createElement('div');
                 rowEl.className = 'post-row';
-                rowEl.onclick = () => openDetail(postId);
                 rowEl.innerHTML = `
-                    <div class="post-row-title">${escapeHtml(post.title)}</div>
-                    <div class="post-row-author">${escapeHtml(post.author)}</div>
+                    <div class="post-row-title" onclick="openDetail('${postId}')">${escapeHtml(post.title)}</div>
+                    <div class="post-row-author clickable-user" onclick="openUserProfile('${escapeHtml(post.author)}')">${escapeHtml(post.author)}</div>
                     <div class="post-row-date">${formattedTime}</div>
                 `;
                 postsList.appendChild(rowEl);
@@ -818,13 +1130,12 @@
             });
         });
 
-        // 상세 페이지 열기 및 실시간 게시글 정보/투표 수 바인딩
+        // 상세 페이지 열기
         window.openDetail = (postId) => {
             currentPostId = postId;
             feedView.style.display = 'none';
             detailView.style.display = 'block';
 
-            // 게시글 실시간 리스너
             onSnapshot(doc(db, "posts", postId), (docSnap) => {
                 if (docSnap.exists()) {
                     const post = docSnap.data();
@@ -833,7 +1144,7 @@
                     document.getElementById('detail-content-area').innerHTML = `
                         <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${escapeHtml(post.title)}</h2>
                         <div style="font-size:0.9rem; color:#666; margin-bottom: 1rem; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">
-                            작성자: <strong>${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime} | 추천수: <strong style="color:#27ae60;">${post.likes || 0}</strong> | 비추천수: <strong style="color:#e74c3c;">${post.dislikes || 0}</strong>
+                            작성자: <strong class="clickable-user" onclick="openUserProfile('${escapeHtml(post.author)}')">${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime} | 추천수: <strong style="color:#27ae60;">${post.likes || 0}</strong> | 비추천수: <strong style="color:#e74c3c;">${post.dislikes || 0}</strong>
                         </div>
                         <div style="white-space: pre-wrap; margin: 1rem 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(post.content)}</div>
                         ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border:2px solid #000; border-radius:4px; margin-top:1rem;">` : ''}
@@ -844,7 +1155,6 @@
                 }
             });
 
-            // 본인 투표 상태 표시 리스너
             const voterKey = getVoterKey();
             onSnapshot(doc(db, "posts", postId, "votes", voterKey), (voteSnap) => {
                 const likeBtn = document.getElementById('btn-vote-like');
@@ -883,10 +1193,11 @@
                     const div = document.createElement('div');
                     div.className = 'comment-item';
                     div.innerHTML = `
-                        <div class="comment-avatar">${initial}</div>
+                        <div class="comment-avatar" onclick="openUserProfile('${escapeHtml(c.author)}')">${initial}</div>
                         <div style="flex:1;">
                             <div style="font-size:0.85rem; font-weight:bold; margin-bottom:0.2rem;">
-                                ${escapeHtml(c.author)} <span style="font-weight:normal; color:#888; font-size:0.75rem;">${formattedTime}</span>
+                                <span class="clickable-user" onclick="openUserProfile('${escapeHtml(c.author)}')">${escapeHtml(c.author)}</span> 
+                                <span style="font-weight:normal; color:#888; font-size:0.75rem;">${formattedTime}</span>
                             </div>
                             <div style="white-space: pre-wrap; font-size:0.95rem;">${escapeHtml(c.text)}</div>
                             ${c.imageUrl ? `<img src="${c.imageUrl}" style="max-width:150px; border:1px solid #000; border-radius:4px; margin-top:0.4rem; display:block;">` : ''}
