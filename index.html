@@ -289,12 +289,6 @@
             overflow: hidden;
         }
 
-        .comment-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
         .comment-body {
             flex: 1;
         }
@@ -404,9 +398,9 @@
             <div class="patch-card">
                 <h3>패치 내용</h3>
                 <ul style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.8;">
-                    <li>v1.2.0 비로그인 IP 및 프로필 아바타 적용</li>
+                    <li>v1.3.0 비로그인 포함 전체 실시간 접속자 집계</li>
+                    <li>비로그인 IP 표시 및 프로필 아바타 적용</li>
                     <li>게시글 상세 페이지 및 댓글 스크롤 기능</li>
-                    <li>실시간 접속자 및 가입자 집계</li>
                 </ul>
             </div>
         </aside>
@@ -491,7 +485,7 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, query, orderBy, 
-            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer 
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, deleteDoc
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -500,7 +494,7 @@
             projectId: "korean-empire",
             storageBucket: "korean-empire.firebasestorage.app",
             messagingSenderId: "1059886832097",
-            appId: "1:1059886832097:web:3f06c1e47af9a3edb05aa0",
+            appId: "1:1059886832097:web:e5622134c671799db05aa0",
             measurementId: "G-2VXJ274Q5Q"
         };
 
@@ -510,17 +504,20 @@
 
         let currentUser = null;
         let currentPostId = null;
-        let userIp = "IP: 127.0.0.1"; // 기본값
+        let userIp = "IP: 127.0.0.1";
 
-        // 접속 IP 조회 (공인 IP 가져오기)
+        // 세션 식별자 생성
+        let sessionId = localStorage.getItem('site_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Math.random().toString(36).substring(2) + Date.now();
+            localStorage.setItem('site_session_id', sessionId);
+        }
+
+        // 공인 IP 조회
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
-            .then(data => {
-                userIp = `IP: ${data.ip}`;
-            })
-            .catch(() => {
-                userIp = "IP: 192.168.x.x";
-            });
+            .then(data => { userIp = `IP: ${data.ip}`; })
+            .catch(() => { userIp = "IP: 192.168.x.x"; });
 
         // DOM 요소
         const authModal = document.getElementById('auth-modal');
@@ -535,6 +532,7 @@
         const heroSec = document.getElementById('hero-sec');
         const postsList = document.getElementById('posts-list');
         const totalUsersEl = document.getElementById('total-users-count');
+        const onlineUsersEl = document.getElementById('online-users-count');
 
         // 모달 제어
         btnOpenAuth.addEventListener('click', () => authModal.style.display = 'flex');
@@ -550,7 +548,40 @@
             window.scrollTo(0, 0);
         };
 
-        // 인증 상태 감지
+        // ----------------------------------------------------
+        // 🌐 비로그인 포함 실시간 접속자 수 (Heartbeat) 시스템
+        // ----------------------------------------------------
+        async function updateHeartbeat() {
+            try {
+                await setDoc(doc(db, "active_sessions", sessionId), {
+                    lastSeen: serverTimestamp()
+                });
+            } catch (e) { console.log(e); }
+        }
+
+        // 10초마다 접속 신호 갱신
+        updateHeartbeat();
+        setInterval(updateHeartbeat, 10000);
+
+        // 실시간 접속자 수 감지 (최근 30초 내 활동 세션 카운트)
+        onSnapshot(collection(db, "active_sessions"), (snapshot) => {
+            const now = Date.now();
+            let activeCount = 0;
+            snapshot.forEach((sessionDoc) => {
+                const data = sessionDoc.data();
+                if (data.lastSeen) {
+                    const lastSeenTime = data.lastSeen.toDate().getTime();
+                    if (now - lastSeenTime < 30000) { // 30초 이내 신호만 카운트
+                        activeCount++;
+                    }
+                }
+            });
+            onlineUsersEl.textContent = `${Math.max(1, activeCount)} 명`;
+        });
+
+        // ----------------------------------------------------
+        // 🔐 인증 및 게시글/댓글 로직
+        // ----------------------------------------------------
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
@@ -596,14 +627,12 @@
             }
         });
 
-        // 실시간 가입자 수 집계
+        // 실시간 가입자 수
         async function updateTotalUsersCount() {
             try {
                 const snapshot = await getCountFromServer(collection(db, "users"));
                 totalUsersEl.textContent = `${snapshot.data().count} 명`;
-            } catch (e) {
-                console.log(e);
-            }
+            } catch (e) { console.log(e); }
         }
 
         // 이미지 파일 Base64 변환
@@ -616,7 +645,7 @@
             });
         }
 
-        // 글 작성 (로그인 여부 무관: 로그인 시 닉네임, 비로그인 시 IP 사용)
+        // 글 작성
         document.getElementById('btn-submit-post').addEventListener('click', async () => {
             const title = document.getElementById('post-title-input').value.trim();
             const content = document.getElementById('post-content-input').value.trim();
@@ -708,7 +737,7 @@
             window.scrollTo(0, 0);
         };
 
-        // 실시간 댓글 불러오기 (댓글 왼쪽에 프로필 아바타 및 닉네임/IP 배치)
+        // 실시간 댓글 불러오기
         function loadComments(postId) {
             const commentsListEl = document.getElementById('detail-comments-list');
             const qComments = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
@@ -722,8 +751,6 @@
                 snap.forEach(cDoc => {
                     const c = cDoc.data();
                     const cTime = c.createdAt ? new Date(c.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
-                    
-                    // 아바타에 표시할 첫 글자 추출
                     const initial = c.author ? c.author.charAt(0).toUpperCase() : '?';
 
                     const div = document.createElement('div');
@@ -744,7 +771,7 @@
             });
         }
 
-        // 댓글 등록 (로그인 여부 무관: 로그인 시 닉네임, 비로그인 시 IP 사용)
+        // 댓글 등록
         document.getElementById('btn-submit-comment').addEventListener('click', async () => {
             if (!currentPostId) return;
             const textInput = document.getElementById('comment-text-input');
