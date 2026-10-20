@@ -227,26 +227,31 @@
             border-radius: 50%;
             border: 3.5px solid #000000;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             font-size: 1.05rem;
             cursor: pointer;
             user-select: none;
-            transition: transform 0.1s;
+            transition: transform 0.1s, opacity 0.2s;
         }
 
         .circle-btn:active {
             transform: scale(0.95);
         }
 
+        .circle-btn.active {
+            box-shadow: 0 0 0 4px #000;
+        }
+
         .btn-like {
-            background-color: #27ae60; /* 이미지의 초록색 */
+            background-color: #27ae60;
             color: #ffffff;
         }
 
         .btn-dislike {
-            background-color: #b2bec3; /* 이미지의 회색 */
+            background-color: #b2bec3;
             color: #000000;
         }
 
@@ -394,13 +399,7 @@
             
             <!-- 피드 뷰 (목록) -->
             <div id="feed-view" class="bordered-box">
-                <!-- 컬럼 헤더 -->
-                <div class="post-table-header">
-                    <div>글들</div>
-                    <div>닉네임</div>
-                    <div>작성일시 (시분까지)</div>
-                </div>
-
+                
                 <!-- 스크롤 게시글 창 -->
                 <div class="post-list-scroll" id="posts-list">
                     <p style="text-align:center; padding: 2rem;">게시글을 불러오는 중입니다...</p>
@@ -414,11 +413,17 @@
                 
                 <!-- 추천 / 비추천 원형 버튼 영역 -->
                 <div class="vote-container">
-                    <div class="circle-btn btn-like" id="btn-vote-like">추천</div>
-                    <div class="circle-btn btn-dislike" id="btn-vote-dislike">비추천</div>
+                    <div class="circle-btn btn-like" id="btn-vote-like">
+                        <span>추천</span>
+                        <span id="vote-like-count" style="font-size:0.85rem; margin-top:2px;">0</span>
+                    </div>
+                    <div class="circle-btn btn-dislike" id="btn-vote-dislike">
+                        <span>비추천</span>
+                        <span id="vote-dislike-count" style="font-size:0.85rem; margin-top:2px;">0</span>
+                    </div>
                 </div>
 
-                <!-- 댓글 박스 전체 (이미지 디자인 스케치 반영) -->
+                <!-- 댓글 박스 전체 -->
                 <div class="comments-outer-box">
                     <div class="comments-title-area">
                         <h3>댓글</h3>
@@ -513,7 +518,7 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, query, orderBy, 
-            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, updateDoc, increment
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, updateDoc, increment, runTransaction
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -532,7 +537,7 @@
 
         let currentUser = null;
         let currentPostId = null;
-        let userIp = "IP: 127.0.0.1";
+        let userIp = "127.0.0.1";
 
         let sessionId = localStorage.getItem('site_session_id');
         if (!sessionId) {
@@ -542,8 +547,8 @@
 
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
-            .then(data => { userIp = `IP: ${data.ip}`; })
-            .catch(() => { userIp = "IP: 192.168.x.x"; });
+            .then(data => { userIp = data.ip; })
+            .catch(() => { userIp = "192.168.x.x"; });
 
         const authModal = document.getElementById('auth-modal');
         const writeModal = document.getElementById('write-modal');
@@ -666,21 +671,59 @@
             return `${month}.${day}. ${hours}:${minutes}`;
         }
 
-        // 추천 및 비추천 클릭 핸들러
-        document.getElementById('btn-vote-like').addEventListener('click', async () => {
-            if (!currentPostId) return;
-            try {
-                const postRef = doc(db, "posts", currentPostId);
-                await updateDoc(postRef, { likes: increment(1) });
-                alert('이 글을 추천했습니다!');
-            } catch (e) {
-                alert('추천 처리 중 오류가 발생했습니다.');
-            }
-        });
+        // ----------------------------------------------------
+        // 🗳️ 1인 1회 추천 / 비추천 교체 로직
+        // ----------------------------------------------------
+        function getVoterKey() {
+            return currentUser ? `user_${currentUser.uid}` : `ip_${userIp.replace(/\./g, '_')}`;
+        }
 
-        document.getElementById('btn-vote-dislike').addEventListener('click', () => {
-            alert('비추천했습니다.');
-        });
+        async function handleVote(targetVote) { // targetVote: 'like' 또는 'dislike'
+            if (!currentPostId) return;
+            const voterKey = getVoterKey();
+            const voteDocRef = doc(db, "posts", currentPostId, "votes", voterKey);
+            const postRef = doc(db, "posts", currentPostId);
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const voteSnap = await transaction.get(voteDocRef);
+                    const postSnap = await transaction.get(postRef);
+                    
+                    if (!postSnap.exists()) return;
+
+                    let currentLikes = postSnap.data().likes || 0;
+                    let currentDislikes = postSnap.data().dislikes || 0;
+                    let previousVote = voteSnap.exists() ? voteSnap.data().type : 'none';
+
+                    if (previousVote === targetVote) {
+                        // 이미 누른 버튼 취소
+                        if (targetVote === 'like') currentLikes = Math.max(0, currentLikes - 1);
+                        if (targetVote === 'dislike') currentDislikes = Math.max(0, currentDislikes - 1);
+                        transaction.delete(voteDocRef);
+                    } else {
+                        // 투표 전환 또는 신규 투표
+                        if (previousVote === 'like') currentLikes = Math.max(0, currentLikes - 1);
+                        if (previousVote === 'dislike') currentDislikes = Math.max(0, currentDislikes - 1);
+
+                        if (targetVote === 'like') currentLikes++;
+                        if (targetVote === 'dislike') currentDislikes++;
+
+                        transaction.set(voteDocRef, { type: targetVote, updatedAt: serverTimestamp() });
+                    }
+
+                    transaction.update(postRef, {
+                        likes: currentLikes,
+                        dislikes: currentDislikes
+                    });
+                });
+            } catch (e) {
+                console.error(e);
+                alert('투표 처리 중 오류가 발생했습니다.');
+            }
+        }
+
+        document.getElementById('btn-vote-like').addEventListener('click', () => handleVote('like'));
+        document.getElementById('btn-vote-dislike').addEventListener('click', () => handleVote('dislike'));
 
         // 글 작성
         document.getElementById('btn-submit-post').addEventListener('click', async () => {
@@ -700,7 +743,7 @@
                 }
             }
 
-            const authorName = currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : userIp;
+            const authorName = currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : `IP: ${userIp}`;
 
             try {
                 await addDoc(collection(db, "posts"), {
@@ -709,6 +752,7 @@
                     imageUrl,
                     author: authorName,
                     likes: 0,
+                    dislikes: 0,
                     createdAt: serverTimestamp()
                 });
                 document.getElementById('post-title-input').value = '';
@@ -743,7 +787,6 @@
                 const formattedTime = formatDateShort(post.createdAt);
                 postsData.push({ id: postId, ...post });
 
-                // 1. 메인 가로 줄 항목
                 const rowEl = document.createElement('div');
                 rowEl.className = 'post-row';
                 rowEl.onclick = () => openDetail(postId);
@@ -754,7 +797,6 @@
                 `;
                 postsList.appendChild(rowEl);
 
-                // 2. 우측 [실시간 글들] (최대 5개)
                 if (count < 5) {
                     const sideEl = document.createElement('div');
                     sideEl.className = 'side-list-item';
@@ -766,7 +808,6 @@
                 count++;
             });
 
-            // 3. 우측 [추천이 가장 많은 글들] (추천 수 기준 내림차순 정렬)
             const sortedByLikes = [...postsData].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 5);
             sortedByLikes.forEach(topPost => {
                 const topEl = document.createElement('div');
@@ -777,32 +818,49 @@
             });
         });
 
-        // 상세 페이지 열기
-        window.openDetail = async (postId) => {
+        // 상세 페이지 열기 및 실시간 게시글 정보/투표 수 바인딩
+        window.openDetail = (postId) => {
             currentPostId = postId;
             feedView.style.display = 'none';
             detailView.style.display = 'block';
 
-            const docRef = doc(db, "posts", postId);
-            const docSnap = await getDoc(docRef);
+            // 게시글 실시간 리스너
+            onSnapshot(doc(db, "posts", postId), (docSnap) => {
+                if (docSnap.exists()) {
+                    const post = docSnap.data();
+                    const formattedTime = formatDateShort(post.createdAt);
+                    
+                    document.getElementById('detail-content-area').innerHTML = `
+                        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${escapeHtml(post.title)}</h2>
+                        <div style="font-size:0.9rem; color:#666; margin-bottom: 1rem; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">
+                            작성자: <strong>${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime} | 추천수: <strong style="color:#27ae60;">${post.likes || 0}</strong> | 비추천수: <strong style="color:#e74c3c;">${post.dislikes || 0}</strong>
+                        </div>
+                        <div style="white-space: pre-wrap; margin: 1rem 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(post.content)}</div>
+                        ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border:2px solid #000; border-radius:4px; margin-top:1rem;">` : ''}
+                    `;
 
-            if (docSnap.exists()) {
-                const post = docSnap.data();
-                const formattedTime = formatDateShort(post.createdAt);
+                    document.getElementById('vote-like-count').textContent = post.likes || 0;
+                    document.getElementById('vote-dislike-count').textContent = post.dislikes || 0;
+                }
+            });
+
+            // 본인 투표 상태 표시 리스너
+            const voterKey = getVoterKey();
+            onSnapshot(doc(db, "posts", postId, "votes", voterKey), (voteSnap) => {
+                const likeBtn = document.getElementById('btn-vote-like');
+                const dislikeBtn = document.getElementById('btn-vote-dislike');
                 
-                document.getElementById('detail-content-area').innerHTML = `
-                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${escapeHtml(post.title)}</h2>
-                    <div style="font-size:0.9rem; color:#666; margin-bottom: 1rem; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">
-                        작성자: <strong>${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime} | 추천수: <strong>${post.likes || 0}</strong>
-                    </div>
-                    <div style="white-space: pre-wrap; margin: 1rem 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(post.content)}</div>
-                    ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border:2px solid #000; border-radius:4px; margin-top:1rem;">` : ''}
-                `;
-                loadComments(postId);
-            } else {
-                alert('존재하지 않는 게시글입니다.');
-                goHome();
-            }
+                likeBtn.classList.remove('active');
+                dislikeBtn.classList.remove('active');
+
+                if (voteSnap.exists()) {
+                    const voteType = voteSnap.data().type;
+                    if (voteType === 'like') likeBtn.classList.add('active');
+                    if (voteType === 'dislike') dislikeBtn.classList.add('active');
+                }
+            });
+
+            loadComments(postId);
             window.scrollTo(0, 0);
         };
 
@@ -858,7 +916,7 @@
                 }
             }
 
-            const authorName = currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : userIp;
+            const authorName = currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : `IP: ${userIp}`;
 
             try {
                 await addDoc(collection(db, "posts", currentPostId, "comments"), {
