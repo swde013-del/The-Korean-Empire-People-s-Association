@@ -28,7 +28,7 @@
             min-height: 100vh;
         }
 
-        /* 1. 가장 상단 민트색 헤더 */
+        /* 1. 상단 민트색 헤더 */
         header {
             background-color: var(--header-bg);
             color: var(--header-text);
@@ -70,7 +70,7 @@
             background-color: #f0f0f0;
         }
 
-        /* 2. 본문 메인 레이아웃 (좌: 메인글, 우: 실시간/추천글) */
+        /* 2. 본문 메인 레이아웃 */
         .main-container {
             width: 100%;
             max-width: 1400px;
@@ -112,10 +112,6 @@
             text-align: center;
         }
 
-        .post-table-header div:first-child {
-            text-align: center;
-        }
-
         /* 게시글 리스트 스크롤 영역 */
         .post-list-scroll {
             height: 680px;
@@ -123,7 +119,6 @@
             padding: 0.5rem;
         }
 
-        /* 커스텀 스크롤바 디자인 */
         .post-list-scroll::-webkit-scrollbar {
             width: 14px;
         }
@@ -199,7 +194,6 @@
             font-weight: bold;
         }
 
-        /* 카운터 미니 카드 */
         .stats-banner {
             display: flex;
             justify-content: space-around;
@@ -213,23 +207,73 @@
             color: #e60000;
         }
 
-        /* ---------------- 상세 페이지 & 댓글 ---------------- */
+        /* ---------------- 상세 페이지 & 이미지 스케치 스타일 댓글 ---------------- */
         #detail-view {
             display: none;
             padding: 1.5rem;
         }
 
-        .comments-section {
-            margin-top: 2rem;
-            border-top: 2px solid #000;
-            padding-top: 1rem;
+        /* 원형 추천 / 비추천 버튼 컨테이너 */
+        .vote-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2.5rem 0 2rem 0;
+        }
+
+        .circle-btn {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            border: 3.5px solid #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.05rem;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .circle-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-like {
+            background-color: #27ae60; /* 이미지의 초록색 */
+            color: #ffffff;
+        }
+
+        .btn-dislike {
+            background-color: #b2bec3; /* 이미지의 회색 */
+            color: #000000;
+        }
+
+        /* 스케치 이미지 스타일 댓글 박스 전체 감싸기 */
+        .comments-outer-box {
+            border: var(--border-width) solid var(--border-color);
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            background: #ffffff;
+        }
+
+        .comments-title-area {
+            border-bottom: 2px solid #000000;
+            padding-bottom: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .comments-title-area h3 {
+            font-size: 1.3rem;
+            font-weight: bold;
         }
 
         .comment-item {
             display: flex;
-            gap: 10px;
-            padding: 0.8rem;
-            border-bottom: 1px solid #eee;
+            gap: 12px;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #ddd;
             align-items: flex-start;
         }
 
@@ -237,8 +281,8 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: #000;
-            color: #fff;
+            background: #000000;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -246,8 +290,29 @@
             flex-shrink: 0;
         }
 
-        /* 폼 요소 */
-        input[type="text"], input[type="email"], input[type="password"], textarea {
+        /* 댓글 입력 폼 */
+        .comment-input-box {
+            margin-top: 1.5rem;
+        }
+
+        .comment-input-box textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #000000;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        .comment-bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.6rem;
+        }
+
+        /* 폼 요소 공통 */
+        input[type="text"], input[type="email"], input[type="password"] {
             width: 100%;
             padding: 0.6rem;
             margin: 0.4rem 0 0.8rem 0;
@@ -260,7 +325,7 @@
             background-color: #000000;
             color: #ffffff;
             border: none;
-            padding: 0.6rem 1.2rem;
+            padding: 0.6rem 1.4rem;
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
@@ -329,6 +394,12 @@
             
             <!-- 피드 뷰 (목록) -->
             <div id="feed-view" class="bordered-box">
+                <!-- 컬럼 헤더 -->
+                <div class="post-table-header">
+                    <div>글들</div>
+                    <div>닉네임</div>
+                    <div>작성일시 (시분까지)</div>
+                </div>
 
                 <!-- 스크롤 게시글 창 -->
                 <div class="post-list-scroll" id="posts-list">
@@ -341,14 +412,25 @@
                 <button class="btn btn-secondary" onclick="goHome()" style="margin-bottom: 1rem;">← 목록으로 돌아가기</button>
                 <div id="detail-content-area"></div>
                 
-                <div class="comments-section">
-                    <h3>댓글</h3>
-                    <div id="detail-comments-list" style="margin-top: 1rem;">댓글을 불러오는 중...</div>
+                <!-- 추천 / 비추천 원형 버튼 영역 -->
+                <div class="vote-container">
+                    <div class="circle-btn btn-like" id="btn-vote-like">추천</div>
+                    <div class="circle-btn btn-dislike" id="btn-vote-dislike">비추천</div>
+                </div>
+
+                <!-- 댓글 박스 전체 (이미지 디자인 스케치 반영) -->
+                <div class="comments-outer-box">
+                    <div class="comments-title-area">
+                        <h3>댓글</h3>
+                    </div>
                     
-                    <div id="comment-write-area" style="margin-top: 1.5rem;">
-                        <textarea id="comment-text-input" rows="2" placeholder="댓글 내용을 입력하세요..."></textarea>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
-                            <input type="file" id="comment-file-input" accept="image/*" style="width: auto; margin:0;">
+                    <div id="detail-comments-list">댓글을 불러오는 중...</div>
+                    
+                    <!-- 댓글 작성 영역 -->
+                    <div class="comment-input-box">
+                        <textarea id="comment-text-input" rows="3" placeholder="댓글 내용을 입력하세요..."></textarea>
+                        <div class="comment-bottom-bar">
+                            <input type="file" id="comment-file-input" accept="image/*">
                             <button class="btn" id="btn-submit-comment">댓글 등록</button>
                         </div>
                     </div>
@@ -379,7 +461,7 @@
             <div class="bordered-box side-card" style="flex: 1.2;">
                 <div class="side-card-title">추천이 가장 많은 글들</div>
                 <div id="top-posts-side">
-                    <div class="side-list-item">추천글 데이터를 계산 중입니다.</div>
+                    <div class="side-list-item">불러오는 중...</div>
                 </div>
             </div>
 
@@ -430,8 +512,8 @@
             signOut, onAuthStateChanged, updateProfile 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
-            getFirestore, collection, addDoc, query, orderBy, limit,
-            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer
+            getFirestore, collection, addDoc, query, orderBy, 
+            onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer, updateDoc, increment
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -452,20 +534,17 @@
         let currentPostId = null;
         let userIp = "IP: 127.0.0.1";
 
-        // 세션 식별자 생성
         let sessionId = localStorage.getItem('site_session_id');
         if (!sessionId) {
             sessionId = 'session_' + Math.random().toString(36).substring(2) + Date.now();
             localStorage.setItem('site_session_id', sessionId);
         }
 
-        // 공인 IP 조회
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => { userIp = `IP: ${data.ip}`; })
             .catch(() => { userIp = "IP: 192.168.x.x"; });
 
-        // DOM 요소
         const authModal = document.getElementById('auth-modal');
         const writeModal = document.getElementById('write-modal');
         const btnOpenAuth = document.getElementById('btn-open-auth');
@@ -481,7 +560,6 @@
         const totalUsersEl = document.getElementById('total-users-count');
         const onlineUsersEl = document.getElementById('online-users-count');
 
-        // 모달 제어
         btnOpenAuth.addEventListener('click', () => authModal.style.display = 'flex');
         btnCloseAuth.addEventListener('click', () => authModal.style.display = 'none');
         btnOpenWrite.addEventListener('click', () => writeModal.style.display = 'flex');
@@ -494,7 +572,7 @@
             window.scrollTo(0, 0);
         };
 
-        // 🌐 접속 신호 (Heartbeat)
+        // 접속 신호 (Heartbeat)
         async function updateHeartbeat() {
             try {
                 await setDoc(doc(db, "active_sessions", sessionId), {
@@ -506,7 +584,6 @@
         updateHeartbeat();
         setInterval(updateHeartbeat, 10000);
 
-        // 실시간 접속자 수 감지
         onSnapshot(collection(db, "active_sessions"), (snapshot) => {
             const now = Date.now();
             let activeCount = 0;
@@ -514,15 +591,12 @@
                 const data = sessionDoc.data();
                 if (data.lastSeen) {
                     const lastSeenTime = data.lastSeen.toDate().getTime();
-                    if (now - lastSeenTime < 30000) {
-                        activeCount++;
-                    }
+                    if (now - lastSeenTime < 30000) activeCount++;
                 }
             });
             onlineUsersEl.textContent = Math.max(1, activeCount);
         });
 
-        // 인증 상태 감지
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
@@ -539,7 +613,6 @@
             updateTotalUsersCount();
         });
 
-        // 회원가입
         document.getElementById('btn-signup').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -555,7 +628,6 @@
             }
         });
 
-        // 로그인
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -568,7 +640,6 @@
             }
         });
 
-        // 실시간 가입자 수
         async function updateTotalUsersCount() {
             try {
                 const snapshot = await getCountFromServer(collection(db, "users"));
@@ -576,7 +647,6 @@
             } catch (e) { console.log(e); }
         }
 
-        // 이미지 파일 Base64 변환
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -586,7 +656,6 @@
             });
         }
 
-        // 날짜를 "월.일. 시:분" 형태로 포맷팅
         function formatDateShort(timestamp) {
             if (!timestamp) return '방금 전';
             const date = timestamp.toDate();
@@ -596,6 +665,22 @@
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${month}.${day}. ${hours}:${minutes}`;
         }
+
+        // 추천 및 비추천 클릭 핸들러
+        document.getElementById('btn-vote-like').addEventListener('click', async () => {
+            if (!currentPostId) return;
+            try {
+                const postRef = doc(db, "posts", currentPostId);
+                await updateDoc(postRef, { likes: increment(1) });
+                alert('이 글을 추천했습니다!');
+            } catch (e) {
+                alert('추천 처리 중 오류가 발생했습니다.');
+            }
+        });
+
+        document.getElementById('btn-vote-dislike').addEventListener('click', () => {
+            alert('비추천했습니다.');
+        });
 
         // 글 작성
         document.getElementById('btn-submit-post').addEventListener('click', async () => {
@@ -635,7 +720,7 @@
             }
         });
 
-        // 실시간 게시글 목록 (메인 스크롤 창 & 우측 사이드바 연동)
+        // 실시간 게시글 불러오기 및 추천수 기준 인기글 정렬
         const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         onSnapshot(qPosts, (snapshot) => {
             postsList.innerHTML = '';
@@ -644,16 +729,19 @@
 
             if (snapshot.empty) {
                 postsList.innerHTML = '<p style="text-align:center; padding: 2rem; color:#777;">작성된 글이 없습니다.</p>';
-                recentPostsSide.innerHTML = '<div class="side-list-item">글이 없습니다.</div>';
-                topPostsSide.innerHTML = '<div class="side-list-item">글이 없습니다.</div>';
+                recentPostsSide.innerHTML = '<div class="side-list-item">작성된 글이 없습니다.</div>';
+                topPostsSide.innerHTML = '<div class="side-list-item">작성된 글이 없습니다.</div>';
                 return;
             }
 
+            let postsData = [];
             let count = 0;
+
             snapshot.forEach((docSnap) => {
                 const post = docSnap.data();
                 const postId = docSnap.id;
                 const formattedTime = formatDateShort(post.createdAt);
+                postsData.push({ id: postId, ...post });
 
                 // 1. 메인 가로 줄 항목
                 const rowEl = document.createElement('div');
@@ -675,16 +763,17 @@
                     recentPostsSide.appendChild(sideEl);
                 }
 
-                // 3. 우측 [추천이 가장 많은 글들]
-                if (count < 5) {
-                    const topEl = document.createElement('div');
-                    topEl.className = 'side-list-item';
-                    topEl.onclick = () => openDetail(postId);
-                    topEl.textContent = `★ ${post.title}`;
-                    topPostsSide.appendChild(topEl);
-                }
-
                 count++;
+            });
+
+            // 3. 우측 [추천이 가장 많은 글들] (추천 수 기준 내림차순 정렬)
+            const sortedByLikes = [...postsData].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 5);
+            sortedByLikes.forEach(topPost => {
+                const topEl = document.createElement('div');
+                topEl.className = 'side-list-item';
+                topEl.onclick = () => openDetail(topPost.id);
+                topEl.textContent = `★ ${topPost.title} (${topPost.likes || 0})`;
+                topPostsSide.appendChild(topEl);
             });
         });
 
@@ -704,7 +793,7 @@
                 document.getElementById('detail-content-area').innerHTML = `
                     <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${escapeHtml(post.title)}</h2>
                     <div style="font-size:0.9rem; color:#666; margin-bottom: 1rem; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">
-                        작성자: <strong>${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime}
+                        작성자: <strong>${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime} | 추천수: <strong>${post.likes || 0}</strong>
                     </div>
                     <div style="white-space: pre-wrap; margin: 1rem 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(post.content)}</div>
                     ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border:2px solid #000; border-radius:4px; margin-top:1rem;">` : ''}
@@ -717,7 +806,7 @@
             window.scrollTo(0, 0);
         };
 
-        // 실시간 댓글
+        // 실시간 댓글 불러오기
         function loadComments(postId) {
             const commentsListEl = document.getElementById('detail-comments-list');
             const qComments = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
@@ -725,7 +814,7 @@
             onSnapshot(qComments, (snap) => {
                 commentsListEl.innerHTML = '';
                 if(snap.empty) {
-                    commentsListEl.innerHTML = '<p style="color:#888; font-size:0.9rem;">작성된 댓글이 없습니다.</p>';
+                    commentsListEl.innerHTML = '<p style="color:#888; font-size:0.95rem; padding: 0.5rem 0;">작성된 댓글이 없습니다.</p>';
                     return;
                 }
                 snap.forEach(cDoc => {
