@@ -210,7 +210,7 @@
             background-color: #555;
         }
 
-        /* 게시글 리스트 아이템 (외각선 추가) */
+        /* 게시글 리스트 아이템 */
         .post-item {
             background: #fff;
             border: 2px solid var(--border-color);
@@ -261,18 +261,56 @@
             padding-top: 1.5rem;
         }
 
+        /* 댓글 스타일 (왼쪽 프로필 + 오른쪽 내용) */
         .comment-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
             background: #f8f9fa;
             border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 0.8rem;
+            border-radius: 8px;
+            padding: 0.9rem;
             margin-bottom: 0.8rem;
         }
 
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e60000;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            flex-shrink: 0;
+            border: 1px solid #000;
+            overflow: hidden;
+        }
+
+        .comment-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .comment-body {
+            flex: 1;
+        }
+
         .comment-meta {
-            font-size: 0.8rem;
-            color: #666;
+            font-size: 0.85rem;
+            color: #444;
             margin-bottom: 0.3rem;
+            font-weight: bold;
+        }
+
+        .comment-time {
+            font-weight: normal;
+            color: #777;
+            font-size: 0.75rem;
+            margin-left: 6px;
         }
 
         /* 모달 공통 스타일 */
@@ -366,7 +404,7 @@
             <div class="patch-card">
                 <h3>패치 내용</h3>
                 <ul style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.8;">
-                    <li>v1.1.0 이미지/GIF 첨부 기능 추가</li>
+                    <li>v1.2.0 비로그인 IP 및 프로필 아바타 적용</li>
                     <li>게시글 상세 페이지 및 댓글 스크롤 기능</li>
                     <li>실시간 접속자 및 가입자 집계</li>
                 </ul>
@@ -377,7 +415,7 @@
         <main class="posts-card" id="feed-view">
             <div class="posts-card-header">
                 <h2>작성한 글들</h2>
-                <button class="btn" id="btn-open-write" style="display: none;">글 작성</button>
+                <button class="btn" id="btn-open-write">글 작성</button>
             </div>
             <div id="posts-list">
                 <p>게시글을 불러오는 중입니다...</p>
@@ -393,7 +431,7 @@
                 <h3>댓글</h3>
                 <div id="detail-comments-list" style="margin-top: 1rem;">댓글을 불러오는 중...</div>
                 
-                <div id="comment-write-area" style="margin-top: 1.5rem; display: none;">
+                <div id="comment-write-area" style="margin-top: 1.5rem;">
                     <textarea id="comment-text-input" rows="2" placeholder="댓글 내용을 입력하세요..."></textarea>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
                         <input type="file" id="comment-file-input" accept="image/*" style="width: auto; margin:0;">
@@ -472,6 +510,17 @@
 
         let currentUser = null;
         let currentPostId = null;
+        let userIp = "IP: 127.0.0.1"; // 기본값
+
+        // 접속 IP 조회 (공인 IP 가져오기)
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                userIp = `IP: ${data.ip}`;
+            })
+            .catch(() => {
+                userIp = "IP: 192.168.x.x";
+            });
 
         // DOM 요소
         const authModal = document.getElementById('auth-modal');
@@ -511,13 +560,9 @@
                     <button class="auth-nav-btn" id="btn-logout">로그아웃</button>
                 `;
                 document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-                btnOpenWrite.style.display = 'inline-block';
-                document.getElementById('comment-write-area').style.display = 'block';
             } else {
                 authNavArea.innerHTML = `<button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>`;
                 document.getElementById('btn-open-auth').addEventListener('click', () => authModal.style.display = 'flex');
-                btnOpenWrite.style.display = 'none';
-                document.getElementById('comment-write-area').style.display = 'none';
             }
             updateTotalUsersCount();
         });
@@ -561,7 +606,7 @@
             }
         }
 
-        // 이미지 파일을 Base64로 변환하는 헬퍼 함수
+        // 이미지 파일 Base64 변환
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -571,7 +616,7 @@
             });
         }
 
-        // 글 작성 (이미지/GIF 포함)
+        // 글 작성 (로그인 여부 무관: 로그인 시 닉네임, 비로그인 시 IP 사용)
         document.getElementById('btn-submit-post').addEventListener('click', async () => {
             const title = document.getElementById('post-title-input').value.trim();
             const content = document.getElementById('post-content-input').value.trim();
@@ -589,12 +634,14 @@
                 }
             }
 
+            const authorName = currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : userIp;
+
             try {
                 await addDoc(collection(db, "posts"), {
                     title,
                     content,
                     imageUrl,
-                    author: currentUser.displayName || currentUser.email,
+                    author: authorName,
                     createdAt: serverTimestamp()
                 });
                 document.getElementById('post-title-input').value = '';
@@ -606,7 +653,7 @@
             }
         });
 
-        // 실시간 게시글 목록 불러오기
+        // 실시간 게시글 목록
         const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         onSnapshot(qPosts, (snapshot) => {
             postsList.innerHTML = '';
@@ -633,7 +680,7 @@
             });
         });
 
-        // 상세 페이지 열기 (글 클릭 시)
+        // 상세 페이지 열기
         window.openDetail = async (postId) => {
             currentPostId = postId;
             feedView.style.display = 'none';
@@ -661,7 +708,7 @@
             window.scrollTo(0, 0);
         };
 
-        // 실시간 댓글 불러오기
+        // 실시간 댓글 불러오기 (댓글 왼쪽에 프로필 아바타 및 닉네임/IP 배치)
         function loadComments(postId) {
             const commentsListEl = document.getElementById('detail-comments-list');
             const qComments = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
@@ -675,19 +722,29 @@
                 snap.forEach(cDoc => {
                     const c = cDoc.data();
                     const cTime = c.createdAt ? new Date(c.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
+                    
+                    // 아바타에 표시할 첫 글자 추출
+                    const initial = c.author ? c.author.charAt(0).toUpperCase() : '?';
+
                     const div = document.createElement('div');
                     div.className = 'comment-item';
                     div.innerHTML = `
-                        <div class="comment-meta"><strong>${escapeHtml(c.author)}</strong> | ${cTime}</div>
-                        <div style="white-space: pre-wrap; font-size:0.95rem;">${escapeHtml(c.text)}</div>
-                        ${c.imageUrl ? `<img src="${c.imageUrl}" style="max-width:150px; border-radius:4px; margin-top:0.4rem; display:block;">` : ''}
+                        <div class="comment-avatar">${initial}</div>
+                        <div class="comment-body">
+                            <div class="comment-meta">
+                                ${escapeHtml(c.author)}
+                                <span class="comment-time">${cTime}</span>
+                            </div>
+                            <div style="white-space: pre-wrap; font-size:0.95rem;">${escapeHtml(c.text)}</div>
+                            ${c.imageUrl ? `<img src="${c.imageUrl}" style="max-width:150px; border-radius:4px; margin-top:0.4rem; display:block;">` : ''}
+                        </div>
                     `;
                     commentsListEl.appendChild(div);
                 });
             });
         }
 
-        // 댓글 등록 (이미지/GIF 포함)
+        // 댓글 등록 (로그인 여부 무관: 로그인 시 닉네임, 비로그인 시 IP 사용)
         document.getElementById('btn-submit-comment').addEventListener('click', async () => {
             if (!currentPostId) return;
             const textInput = document.getElementById('comment-text-input');
@@ -706,11 +763,13 @@
                 }
             }
 
+            const authorName = currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : userIp;
+
             try {
                 await addDoc(collection(db, "posts", currentPostId, "comments"), {
                     text,
                     imageUrl,
-                    author: currentUser.displayName || currentUser.email,
+                    author: authorName,
                     createdAt: serverTimestamp()
                 });
                 textInput.value = '';
