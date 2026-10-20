@@ -7,11 +7,10 @@
     <title>알로아로아</title>
     <style>
         :root {
-            --header-bg: #e60000;
-            --header-text: #ffffff;
-            --bg-color: #f8f9fa;
+            --header-bg: #80effe; /* 상단 민트색/하늘색 */
+            --header-text: #000000;
             --border-color: #000000;
-            --card-bg: #ffffff;
+            --border-width: 3px;
         }
 
         * {
@@ -22,179 +21,244 @@
 
         body {
             font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-            background-color: var(--bg-color);
-            color: #111;
+            background-color: #ffffff;
+            color: #000;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        /* 1. 상단 헤더 */
+        /* 1. 가장 상단 민트색 헤더 */
         header {
             background-color: var(--header-bg);
             color: var(--header-text);
+            padding: 1rem 1.5rem;
+            border-bottom: var(--border-width) solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.8rem 1.5rem;
-            border-bottom: 2px solid var(--border-color);
+            position: relative;
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
             font-weight: bold;
-            font-size: 1.3rem;
             cursor: pointer;
         }
 
-        .logo-img {
-            height: 35px;
-            width: auto;
-            object-fit: contain;
-            border-radius: 3px;
-        }
-
-        .header-right {
+        .header-left, .header-right {
             display: flex;
             gap: 10px;
             align-items: center;
+            z-index: 2;
         }
 
-        .auth-nav-btn {
-            background-color: transparent;
-            color: white;
-            border: 2px solid white;
+        .btn-header {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
             padding: 0.4rem 0.8rem;
             font-weight: bold;
             cursor: pointer;
             border-radius: 4px;
         }
 
-        .auth-nav-btn:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-
-        /* 2. 메인 비주얼 영역 */
-        .hero-section {
-            background-color: #ffffff;
-            border-bottom: 2px solid var(--border-color);
-            padding: 2.5rem 1rem;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.5px;
-        }
-
-        .hero-image-box {
-            width: 100%;
-            max-width: 700px;
-            height: 180px;
-            margin: 0 auto;
-            border: 2px dashed #888;
+        .btn-header:hover {
             background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #555;
-            border-radius: 6px;
         }
 
-        /* 3. 본문 레이아웃 */
+        /* 2. 본문 메인 레이아웃 (좌: 메인글, 우: 실시간/추천글) */
         .main-container {
-            max-width: 1100px;
             width: 100%;
-            margin: 1.5rem auto;
-            padding: 0 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
             display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 1.5rem;
+            grid-template-columns: 1fr 340px;
+            gap: 1rem;
             flex: 1;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .main-container {
                 grid-template-columns: 1fr;
             }
         }
 
-        /* 카운터 & 패치 카드 */
-        .stat-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1rem;
+        /* 공통 박스 테두리 */
+        .bordered-box {
+            border: var(--border-width) solid var(--border-color);
+            background: #ffffff;
         }
 
-        .stat-value {
-            font-size: 1.4rem;
-            color: var(--header-bg);
-            margin-top: 0.3rem;
-        }
-
-        .patch-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.2rem;
-            min-height: 200px;
-        }
-
-        .patch-card h3 {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 0.4rem;
-            margin-bottom: 0.8rem;
-            font-size: 1.2rem;
-        }
-
-        /* 게시글 영역 */
-        .posts-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 20px;
-            padding: 1.5rem;
+        /* ---------------- 좌측 영역 ---------------- */
+        .left-content {
             display: flex;
             flex-direction: column;
         }
 
-        .posts-card-header {
-            display: flex;
-            justify-content: space-between;
+        /* 게시글 테이블 헤더 */
+        .post-table-header {
+            display: grid;
+            grid-template-columns: 1fr 180px 180px;
+            padding: 0.8rem 1rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-bottom: var(--border-width) solid var(--border-color);
+            background-color: #fdfdfd;
+            text-align: center;
+        }
+
+        .post-table-header div:first-child {
+            text-align: center;
+        }
+
+        /* 게시글 리스트 스크롤 영역 */
+        .post-list-scroll {
+            height: 680px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        /* 커스텀 스크롤바 디자인 */
+        .post-list-scroll::-webkit-scrollbar {
+            width: 14px;
+        }
+        .post-list-scroll::-webkit-scrollbar-track {
+            background: #ffffff;
+            border-left: 2px solid #000000;
+        }
+        .post-list-scroll::-webkit-scrollbar-thumb {
+            background: #ffffff;
+            border: 2px solid #000000;
+        }
+
+        /* 게시글 줄 아이템 */
+        .post-row {
+            display: grid;
+            grid-template-columns: 1fr 180px 180px;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
             align-items: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 0.5rem;
+        }
+
+        .post-row:hover {
+            background-color: #f5f5f5;
+        }
+
+        .post-row-title {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .post-row-author, .post-row-date {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        /* ---------------- 우측 영역 ---------------- */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .side-card {
+            padding: 1rem;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
             margin-bottom: 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid var(--border-color);
         }
 
-        .posts-card-header h2 {
-            border: none;
-            margin: 0;
-            padding: 0;
+        .side-list-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #bbb;
+            font-size: 0.95rem;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* 폼 및 입력 요소 */
+        .side-list-item:hover {
+            font-weight: bold;
+        }
+
+        /* 카운터 미니 카드 */
+        .stats-banner {
+            display: flex;
+            justify-content: space-around;
+            padding: 0.8rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .stats-banner span {
+            color: #e60000;
+        }
+
+        /* ---------------- 상세 페이지 & 댓글 ---------------- */
+        #detail-view {
+            display: none;
+            padding: 1.5rem;
+        }
+
+        .comments-section {
+            margin-top: 2rem;
+            border-top: 2px solid #000;
+            padding-top: 1rem;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+            align-items: flex-start;
+        }
+
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* 폼 요소 */
         input[type="text"], input[type="email"], input[type="password"], textarea {
             width: 100%;
             padding: 0.6rem;
             margin: 0.4rem 0 0.8rem 0;
-            border: 1px solid #bbb;
+            border: 2px solid #000;
             border-radius: 4px;
             font-size: 0.95rem;
         }
 
         .btn {
-            background-color: var(--header-bg);
-            color: white;
+            background-color: #000000;
+            color: #ffffff;
             border: none;
             padding: 0.6rem 1.2rem;
             font-weight: bold;
@@ -203,111 +267,14 @@
         }
 
         .btn:hover {
-            background-color: #cc0000;
+            background-color: #333333;
         }
 
         .btn-secondary {
-            background-color: #555;
+            background-color: #777777;
         }
 
-        /* 게시글 리스트 아이템 */
-        .post-item {
-            background: #fff;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.2rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .post-item:hover {
-            background-color: #fafafa;
-        }
-
-        .post-title {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .post-meta {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 0.6rem;
-        }
-
-        .post-img-preview {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 4px;
-            margin-top: 0.5rem;
-            display: block;
-        }
-
-        /* 상세 페이지 뷰 */
-        #detail-view {
-            display: none;
-            background: #fff;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-top: 1.5rem;
-        }
-
-        .comments-section {
-            margin-top: 2rem;
-            border-top: 2px solid #ddd;
-            padding-top: 1.5rem;
-        }
-
-        /* 댓글 스타일 */
-        .comment-item {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            background: #f8f9fa;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 0.9rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .comment-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #e60000;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            flex-shrink: 0;
-            border: 1px solid #000;
-            overflow: hidden;
-        }
-
-        .comment-body {
-            flex: 1;
-        }
-
-        .comment-meta {
-            font-size: 0.85rem;
-            color: #444;
-            margin-bottom: 0.3rem;
-            font-weight: bold;
-        }
-
-        .comment-time {
-            font-weight: normal;
-            color: #777;
-            font-size: 0.75rem;
-            margin-left: 6px;
-        }
-
-        /* 모달 공통 스타일 */
+        /* 모달 스타일 */
         .modal {
             display: none;
             position: fixed;
@@ -321,119 +288,103 @@
         .modal-content {
             background: white;
             padding: 2rem;
-            border-radius: 12px;
+            border-radius: 8px;
             width: 90%;
             max-width: 500px;
-            border: 2px solid var(--border-color);
+            border: var(--border-width) solid var(--border-color);
             max-height: 90vh;
             overflow-y: auto;
         }
 
-        /* 푸터 */
         footer {
-            border-top: 2px solid var(--border-color);
-            background: #ffffff;
+            border-top: var(--border-width) solid var(--border-color);
             padding: 1rem;
-            margin-top: auto;
-        }
-
-        .footer-top {
-            display: flex;
-            justify-content: flex-end;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .contact-link {
-            color: #333;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .footer-bottom {
             text-align: center;
             font-weight: bold;
-            font-size: 1.1rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #eee;
+            margin-top: auto;
+            background: #ffffff;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. 상단 헤더 -->
+    <!-- 1. 상단 민트색 헤더 -->
     <header>
-        <div class="logo-container" onclick="goHome()">
-            <img src="logo.png" alt="대한제국 태극기 로고" class="logo-img">
-            <span>대한제국인민협회</span>
+        <div class="header-left">
+            <button class="btn-header" id="btn-open-write">글 작성</button>
         </div>
+        
+        <div class="header-title" onclick="goHome()">알로아로아</div>
+        
         <div class="header-right" id="auth-nav-area">
-            <button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>
+            <button class="btn-header" id="btn-open-auth">로그인 / 회원가입</button>
         </div>
     </header>
 
-    <!-- 2. 메인 비주얼 -->
-    <section class="hero-section" id="hero-sec">
-        <h1 class="hero-title">The Korean Empire People's Association</h1>
-        <div class="hero-image-box">
-            <span>이미지</span>
-        </div>
-    </section>
-
-    <!-- 3. 본문 레이아웃 -->
-    <div class="main-container" id="main-sec">
-        <!-- 좌측 대시보드 -->
-        <aside class="left-aside">
-            <div class="stat-card">
-                <div>현재 실시간 가입자수</div>
-                <div class="stat-value" id="total-users-count">0 명</div>
-            </div>
-
-            <div class="stat-card">
-                <div>현재 실시간 접속자 수</div>
-                <div class="stat-value" id="online-users-count">1 명</div>
-            </div>
-
-            <div class="patch-card">
-                <h3>패치 내용</h3>
-                <ul style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.8;">
-                    <li>v1.3.0 비로그인 포함 전체 실시간 접속자 집계</li>
-                    <li>비로그인 IP 표시 및 프로필 아바타 적용</li>
-                    <li>게시글 상세 페이지 및 댓글 스크롤 기능</li>
-                </ul>
-            </div>
-        </aside>
-
-        <!-- 우측 작성한 글들 (메인 피드) -->
-        <main class="posts-card" id="feed-view">
-            <div class="posts-card-header">
-                <h2>작성한 글들</h2>
-                <button class="btn" id="btn-open-write">글 작성</button>
-            </div>
-            <div id="posts-list">
-                <p>게시글을 불러오는 중입니다...</p>
-            </div>
-        </main>
-
-        <!-- 상세 페이지 뷰 (글 클릭 시 전환) -->
-        <main class="posts-card" id="detail-view">
-            <button class="btn btn-secondary" onclick="goHome()" style="margin-bottom: 1rem; width: fit-content;">← 목록으로 돌아가기</button>
-            <div id="detail-content-area"></div>
+    <!-- 2. 본문 레이아웃 -->
+    <div class="main-container">
+        
+        <!-- 좌측 메인 영역 (글 목록 또는 상세 페이지) -->
+        <main class="left-content">
             
-            <div class="comments-section">
-                <h3>댓글</h3>
-                <div id="detail-comments-list" style="margin-top: 1rem;">댓글을 불러오는 중...</div>
+            <!-- 피드 뷰 (목록) -->
+            <div id="feed-view" class="bordered-box">
+
+                <!-- 스크롤 게시글 창 -->
+                <div class="post-list-scroll" id="posts-list">
+                    <p style="text-align:center; padding: 2rem;">게시글을 불러오는 중입니다...</p>
+                </div>
+            </div>
+
+            <!-- 상세 페이지 뷰 -->
+            <div id="detail-view" class="bordered-box">
+                <button class="btn btn-secondary" onclick="goHome()" style="margin-bottom: 1rem;">← 목록으로 돌아가기</button>
+                <div id="detail-content-area"></div>
                 
-                <div id="comment-write-area" style="margin-top: 1.5rem;">
-                    <textarea id="comment-text-input" rows="2" placeholder="댓글 내용을 입력하세요..."></textarea>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
-                        <input type="file" id="comment-file-input" accept="image/*" style="width: auto; margin:0;">
-                        <button class="btn" id="btn-submit-comment">댓글 등록</button>
+                <div class="comments-section">
+                    <h3>댓글</h3>
+                    <div id="detail-comments-list" style="margin-top: 1rem;">댓글을 불러오는 중...</div>
+                    
+                    <div id="comment-write-area" style="margin-top: 1.5rem;">
+                        <textarea id="comment-text-input" rows="2" placeholder="댓글 내용을 입력하세요..."></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
+                            <input type="file" id="comment-file-input" accept="image/*" style="width: auto; margin:0;">
+                            <button class="btn" id="btn-submit-comment">댓글 등록</button>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </main>
+
+        <!-- 우측 사이드바 영역 -->
+        <aside class="right-sidebar">
+            
+            <!-- 상단 접속자 / 가입자 요약 정보 -->
+            <div class="bordered-box stats-banner">
+                <div>가입자 <span id="total-users-count">0</span>명</div>
+                <div>|</div>
+                <div>실시간 접속 <span id="online-users-count">1</span>명</div>
+            </div>
+
+            <!-- 실시간 글들 -->
+            <div class="bordered-box side-card" style="flex: 1;">
+                <div class="side-card-title">실시간 글들</div>
+                <div id="recent-posts-side">
+                    <div class="side-list-item">불러오는 중...</div>
+                </div>
+            </div>
+
+            <!-- 추천이 가장 많은 글들 -->
+            <div class="bordered-box side-card" style="flex: 1.2;">
+                <div class="side-card-title">추천이 가장 많은 글들</div>
+                <div id="top-posts-side">
+                    <div class="side-list-item">추천글 데이터를 계산 중입니다.</div>
+                </div>
+            </div>
+
+        </aside>
+
     </div>
 
     <!-- 글 작성 모달 -->
@@ -441,8 +392,8 @@
         <div class="modal-content">
             <h2>새로운 소식 작성</h2>
             <input type="text" id="post-title-input" placeholder="제목을 입력하세요">
-            <textarea id="post-content-input" rows="5" placeholder="내용을 입력하세요..."></textarea>
-            <label style="font-size: 0.9rem; font-weight: bold; display: block; margin-top: 0.5rem;">이미지 / GIF 첨부:</label>
+            <textarea id="post-content-input" rows="6" placeholder="내용을 입력하세요..."></textarea>
+            <label style="font-size: 0.9rem; font-weight: bold; display: block;">이미지 / GIF 첨부:</label>
             <input type="file" id="post-file-input" accept="image/*">
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                 <button class="btn" id="btn-submit-post" style="flex:1;">게시하기</button>
@@ -468,12 +419,7 @@
 
     <!-- 푸터 -->
     <footer>
-        <div class="footer-top">
-            <a href="mailto:swde013@gmail.com" class="contact-link">문의</a>
-        </div>
-        <div class="footer-bottom">
-            대한제국인민협회
-        </div>
+        알로아로아
     </footer>
 
     <!-- Firebase 및 앱 로직 스크립트 -->
@@ -484,7 +430,7 @@
             signOut, onAuthStateChanged, updateProfile 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
-            getFirestore, collection, addDoc, query, orderBy, 
+            getFirestore, collection, addDoc, query, orderBy, limit,
             onSnapshot, serverTimestamp, doc, setDoc, getDoc, getCountFromServer
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -529,8 +475,9 @@
         const authNavArea = document.getElementById('auth-nav-area');
         const feedView = document.getElementById('feed-view');
         const detailView = document.getElementById('detail-view');
-        const heroSec = document.getElementById('hero-sec');
         const postsList = document.getElementById('posts-list');
+        const recentPostsSide = document.getElementById('recent-posts-side');
+        const topPostsSide = document.getElementById('top-posts-side');
         const totalUsersEl = document.getElementById('total-users-count');
         const onlineUsersEl = document.getElementById('online-users-count');
 
@@ -542,8 +489,7 @@
 
         window.goHome = () => {
             detailView.style.display = 'none';
-            feedView.style.display = 'flex';
-            heroSec.style.display = 'block';
+            feedView.style.display = 'block';
             currentPostId = null;
             window.scrollTo(0, 0);
         };
@@ -573,7 +519,7 @@
                     }
                 }
             });
-            onlineUsersEl.textContent = `${Math.max(1, activeCount)} 명`;
+            onlineUsersEl.textContent = Math.max(1, activeCount);
         });
 
         // 인증 상태 감지
@@ -582,12 +528,12 @@
             if (user) {
                 authModal.style.display = 'none';
                 authNavArea.innerHTML = `
-                    <span style="color:white; font-weight:bold; margin-right:5px;">${user.displayName || user.email.split('@')[0]}님</span>
-                    <button class="auth-nav-btn" id="btn-logout">로그아웃</button>
+                    <span style="font-weight:bold; margin-right:5px;">${user.displayName || user.email.split('@')[0]}님</span>
+                    <button class="btn-header" id="btn-logout">로그아웃</button>
                 `;
                 document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
             } else {
-                authNavArea.innerHTML = `<button class="auth-nav-btn" id="btn-open-auth">회원가입과 로그인</button>`;
+                authNavArea.innerHTML = `<button class="btn-header" id="btn-open-auth">로그인 / 회원가입</button>`;
                 document.getElementById('btn-open-auth').addEventListener('click', () => authModal.style.display = 'flex');
             }
             updateTotalUsersCount();
@@ -626,7 +572,7 @@
         async function updateTotalUsersCount() {
             try {
                 const snapshot = await getCountFromServer(collection(db, "users"));
-                totalUsersEl.textContent = `${snapshot.data().count} 명`;
+                totalUsersEl.textContent = snapshot.data().count;
             } catch (e) { console.log(e); }
         }
 
@@ -638,6 +584,17 @@
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = error => reject(error);
             });
+        }
+
+        // 날짜를 "월.일. 시:분" 형태로 포맷팅
+        function formatDateShort(timestamp) {
+            if (!timestamp) return '방금 전';
+            const date = timestamp.toDate();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${month}.${day}. ${hours}:${minutes}`;
         }
 
         // 글 작성
@@ -666,6 +623,7 @@
                     content,
                     imageUrl,
                     author: authorName,
+                    likes: 0,
                     createdAt: serverTimestamp()
                 });
                 document.getElementById('post-title-input').value = '';
@@ -677,30 +635,56 @@
             }
         });
 
-        // 실시간 게시글 목록
+        // 실시간 게시글 목록 (메인 스크롤 창 & 우측 사이드바 연동)
         const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         onSnapshot(qPosts, (snapshot) => {
             postsList.innerHTML = '';
+            recentPostsSide.innerHTML = '';
+            topPostsSide.innerHTML = '';
+
             if (snapshot.empty) {
-                postsList.innerHTML = '<p style="color:#777;">작성된 글이 없습니다.</p>';
+                postsList.innerHTML = '<p style="text-align:center; padding: 2rem; color:#777;">작성된 글이 없습니다.</p>';
+                recentPostsSide.innerHTML = '<div class="side-list-item">글이 없습니다.</div>';
+                topPostsSide.innerHTML = '<div class="side-list-item">글이 없습니다.</div>';
                 return;
             }
 
+            let count = 0;
             snapshot.forEach((docSnap) => {
                 const post = docSnap.data();
                 const postId = docSnap.id;
-                const time = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
+                const formattedTime = formatDateShort(post.createdAt);
 
-                const postEl = document.createElement('div');
-                postEl.className = 'post-item';
-                postEl.onclick = () => openDetail(postId);
-                postEl.innerHTML = `
-                    <div class="post-title">${escapeHtml(post.title)}</div>
-                    <div class="post-meta">작성자: ${escapeHtml(post.author)} | ${time}</div>
-                    <div style="white-space: pre-wrap; margin-bottom:0.5rem;">${escapeHtml(post.content)}</div>
-                    ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-img-preview">` : ''}
+                // 1. 메인 가로 줄 항목
+                const rowEl = document.createElement('div');
+                rowEl.className = 'post-row';
+                rowEl.onclick = () => openDetail(postId);
+                rowEl.innerHTML = `
+                    <div class="post-row-title">${escapeHtml(post.title)}</div>
+                    <div class="post-row-author">${escapeHtml(post.author)}</div>
+                    <div class="post-row-date">${formattedTime}</div>
                 `;
-                postsList.appendChild(postEl);
+                postsList.appendChild(rowEl);
+
+                // 2. 우측 [실시간 글들] (최대 5개)
+                if (count < 5) {
+                    const sideEl = document.createElement('div');
+                    sideEl.className = 'side-list-item';
+                    sideEl.onclick = () => openDetail(postId);
+                    sideEl.textContent = `• ${post.title}`;
+                    recentPostsSide.appendChild(sideEl);
+                }
+
+                // 3. 우측 [추천이 가장 많은 글들]
+                if (count < 5) {
+                    const topEl = document.createElement('div');
+                    topEl.className = 'side-list-item';
+                    topEl.onclick = () => openDetail(postId);
+                    topEl.textContent = `★ ${post.title}`;
+                    topPostsSide.appendChild(topEl);
+                }
+
+                count++;
             });
         });
 
@@ -708,7 +692,6 @@
         window.openDetail = async (postId) => {
             currentPostId = postId;
             feedView.style.display = 'none';
-            heroSec.style.display = 'none';
             detailView.style.display = 'block';
 
             const docRef = doc(db, "posts", postId);
@@ -716,13 +699,15 @@
 
             if (docSnap.exists()) {
                 const post = docSnap.data();
-                const time = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
+                const formattedTime = formatDateShort(post.createdAt);
                 
                 document.getElementById('detail-content-area').innerHTML = `
                     <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${escapeHtml(post.title)}</h2>
-                    <div class="post-meta">작성자: ${escapeHtml(post.author)} | ${time}</div>
+                    <div style="font-size:0.9rem; color:#666; margin-bottom: 1rem; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">
+                        작성자: <strong>${escapeHtml(post.author)}</strong> | 작성일시: ${formattedTime}
+                    </div>
                     <div style="white-space: pre-wrap; margin: 1rem 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(post.content)}</div>
-                    ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border-radius:6px; margin-top:1rem;">` : ''}
+                    ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:100%; border:2px solid #000; border-radius:4px; margin-top:1rem;">` : ''}
                 `;
                 loadComments(postId);
             } else {
@@ -745,20 +730,19 @@
                 }
                 snap.forEach(cDoc => {
                     const c = cDoc.data();
-                    const cTime = c.createdAt ? new Date(c.createdAt.toDate()).toLocaleString('ko-KR') : '방금 전';
+                    const formattedTime = formatDateShort(c.createdAt);
                     const initial = c.author ? c.author.charAt(0).toUpperCase() : '?';
 
                     const div = document.createElement('div');
                     div.className = 'comment-item';
                     div.innerHTML = `
                         <div class="comment-avatar">${initial}</div>
-                        <div class="comment-body">
-                            <div class="comment-meta">
-                                ${escapeHtml(c.author)}
-                                <span class="comment-time">${cTime}</span>
+                        <div style="flex:1;">
+                            <div style="font-size:0.85rem; font-weight:bold; margin-bottom:0.2rem;">
+                                ${escapeHtml(c.author)} <span style="font-weight:normal; color:#888; font-size:0.75rem;">${formattedTime}</span>
                             </div>
                             <div style="white-space: pre-wrap; font-size:0.95rem;">${escapeHtml(c.text)}</div>
-                            ${c.imageUrl ? `<img src="${c.imageUrl}" style="max-width:150px; border-radius:4px; margin-top:0.4rem; display:block;">` : ''}
+                            ${c.imageUrl ? `<img src="${c.imageUrl}" style="max-width:150px; border:1px solid #000; border-radius:4px; margin-top:0.4rem; display:block;">` : ''}
                         </div>
                     `;
                     commentsListEl.appendChild(div);
